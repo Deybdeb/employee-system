@@ -1,0 +1,294 @@
+
+Table countries {
+  id integer [pk, increment]
+  code varchar(2) [unique, not null]
+  name varchar(100) [unique, not null]
+}
+
+Table skills {
+  id integer [pk, increment]
+  name varchar(100) [unique, not null]
+}
+
+Table languages {
+  id integer [pk, increment]
+  name varchar(100) [unique, not null]
+  code varchar(10) [unique] // e.g., 'en-US'
+}
+
+Table license_types {
+  id integer [pk, increment]
+  name varchar(150) [unique, not null]
+  description text [note: 'HTML content via TinyMCE']
+}
+
+// -- Job-Related Lookups --
+Table job_titles {
+  id integer [pk, increment]
+  name varchar(100) [unique, not null]
+  description text [note: 'HTML content via TinyMCE']
+}
+
+Table departments {
+  id integer [pk, increment]
+  name varchar(100) [unique, not null]
+}
+
+// -- HR Process Lookups --
+Table leave_types {
+  id integer [pk, increment]
+  name varchar(50) [unique, not null]
+  default_days_allowed integer
+}
+
+
+Table employees {
+  id varchar(36) [pk, note: 'UUID'] 
+  first_name varchar(100) [not null]
+  middle_name varchar(100)
+  last_name varchar(100) [not null]
+  date_of_birth date [not null]
+  gender varchar(20) [note: 'Male, Female, Other']
+  marital_status varchar(20) [note: 'Single, Married, etc']
+  nationality_id integer [ref: > countries.id]
+  personal_email varchar(255) [unique, not null]
+  work_email varchar(255) [unique]
+  mobile_phone varchar(20) [unique]
+  home_phone varchar(20)
+  password varchar(255) [not null]
+  is_2fa_enabled boolean [default: false]
+  manager_id varchar(36) [ref: > employees.id, note: 'Self-referencing']
+  created_at timestamp [default: `current_timestamp`]
+  updated_at timestamp
+}
+
+
+
+Table addresses {
+  id integer [pk, increment]
+  employee_id varchar(36) [not null, ref: > employees.id]
+  country_id integer [ref: > countries.id]
+  type varchar(20) [default: 'home', note: 'home, mailing']
+  street_1 varchar(255)
+  street_2 varchar(255)
+  city varchar(100)
+  state_province varchar(100)
+  postal_code varchar(20)
+}
+
+Table emergency_contacts {
+  id integer [pk, increment]
+  employee_id varchar(36) [not null, ref: > employees.id]
+  name varchar(255) [not null]
+  relationship varchar(50)
+  home_phone varchar(20)
+  mobile_phone varchar(20)
+  work_phone varchar(20)
+}
+
+Table dependents {
+  id integer [pk, increment]
+  employee_id varchar(36) [not null, ref: > employees.id]
+  name varchar(255) [not null]
+  relationship varchar(20) [not null, note: 'Spouse, Child, etc']
+  date_of_birth date [not null]
+}
+
+Table immigration_records {
+  id integer [pk, increment]
+  employee_id varchar(36) [not null, ref: > employees.id]
+  issued_by_country_id integer [ref: > countries.id]
+  document_type varchar(50) [not null, note: 'Passport, Visa, etc']
+  document_number varchar(100) [not null]
+  issued_date date
+  expiry_date date
+  status_code integer [note: '0=Pending, 1=Valid, 2=Expired']
+}
+
+
+
+Table work_experiences {
+  id integer [pk, increment]
+  employee_id varchar(36) [not null, ref: > employees.id]
+  company_name varchar(255) [not null]
+  job_title varchar(255) [not null]
+  start_date date [not null]
+  end_date date [note: 'Null if current job']
+  comment text [note: 'HTML content via TinyMCE']
+}
+
+Table educations {
+  id integer [pk, increment]
+  employee_id varchar(36) [not null, ref: > employees.id]
+  level varchar(100) [note: 'Bachelors, Masters, etc']
+  institute varchar(255) [not null]
+  major varchar(255)
+  year_completed integer
+  gpa_score varchar(10)
+}
+
+Table employee_skills {
+  employee_id varchar(36) [ref: > employees.id]
+  skill_id integer [ref: > skills.id]
+  years_of_experience integer
+  indexes { (employee_id, skill_id) [pk] }
+}
+
+Table employee_languages {
+  employee_id varchar(36) [ref: > employees.id]
+  language_id integer [ref: > languages.id]
+  fluency varchar(20) [note: 'Basic, Native, etc']
+  competency varchar(20) [note: 'Reading, Speaking, etc']
+  indexes { (employee_id, language_id) [pk] }
+}
+
+Table employee_licenses {
+  id integer [pk, increment]
+  employee_id varchar(36) [not null, ref: > employees.id]
+  license_type_id integer [not null, ref: > license_types.id]
+  license_number varchar(100) [not null]
+  issued_date date
+  expiry_date date
+}
+
+Table employee_memberships {
+  id integer [pk, increment]
+  employee_id varchar(36) [not null, ref: > employees.id]
+  organization_name varchar(255) [not null]
+  subscription_paid_by varchar(20) [note: 'company, employee']
+  subscription_amount decimal(10,2)
+  currency varchar(3)
+  commence_date date
+  renewal_date date
+}
+
+
+
+Table locations {
+  id integer [pk, increment]
+  country_id integer [ref: > countries.id]
+  name varchar(100) [not null]
+  city varchar(100)
+}
+
+Table job_histories {
+  id integer [pk, increment]
+  employee_id varchar(36) [not null, ref: > employees.id]
+  job_title_id integer [not null, ref: > job_titles.id]
+  department_id integer [not null, ref: > departments.id]
+  location_id integer [ref: > locations.id]
+  employment_status integer [not null, note: '1=Full-Time, 2=Part-Time, 3=Contract']
+  start_date date [not null]
+  end_date date [note: 'Null if current role']
+}
+
+Table salary_histories {
+  id integer [pk, increment]
+  employee_id varchar(36) [not null, ref: > employees.id]
+  effective_date date [not null]
+  pay_frequency varchar(20) [note: 'monthly, bi-weekly']
+  amount decimal(12, 2) [not null]
+  currency varchar(3) [not null, default: 'USD']
+  comment text [note: 'HTML content via TinyMCE']
+}
+
+Table payroll_configurations {
+  employee_id varchar(36) [pk, ref: > employees.id]
+  payment_method varchar(50) [note: 'direct_deposit, check']
+  bank_name varchar(255)
+  account_number varchar(255) [note: 'Encrypted']
+  routing_number varchar(255) [note: 'Encrypted']
+}
+
+
+
+Table projects {
+  id integer [pk, increment]
+  name varchar(150) [unique, not null]
+  client_name varchar(150)
+  description text [note: 'HTML content via TinyMCE']
+  start_date date
+  end_date date
+}
+
+Table project_comments {
+  id integer [pk, increment]
+  project_id integer [not null, ref: > projects.id]
+  author_id varchar(36) [not null, ref: > employees.id]
+  date date [not null]
+  comment_text text [not null, note: 'HTML content via TinyMCE']
+  created_at timestamp [default: `current_timestamp`]
+}
+
+Table timesheet_entries {
+  id integer [pk, increment]
+  employee_id varchar(36) [not null, ref: > employees.id]
+  project_id integer [not null, ref: > projects.id]
+  start_date date [not null]
+  end_date date [not null]
+  hours_worked decimal(4, 2) [not null]
+  is_overtime boolean [default: false]
+}
+
+Table leave_requests {
+  id integer [pk, increment]
+  employee_id varchar(36) [not null, ref: > employees.id]
+  leave_type_id integer [not null, ref: > leave_types.id]
+  reviewed_by varchar(36) [ref: > employees.id]
+  start_date date [not null]
+  end_date date [not null]
+  reason text [note: 'HTML content via TinyMCE']
+  status integer [not null, default: 0, note: '0=Pending, 1=Approved, 2=Rejected']
+  created_at timestamp [default: `current_timestamp`]
+}
+
+Table performance_reviews {
+  id integer [pk, increment]
+  employee_id varchar(36) [not null, ref: > employees.id]
+  reviewer_id varchar(36) [not null, ref: > employees.id]
+  period_start_date date [not null]
+  period_end_date date [not null]
+  due_date date
+  self_eval_status integer [note: '0=Not Started, 1=In Progress, 2=Completed']
+  manager_review_status integer [note: '0=Not Started, 1=In Progress, 2=Completed']
+  overall_rating integer [note: 'Scale 1-5']
+  comments text [note: 'HTML content via TinyMCE']
+}
+
+
+Table posts {
+  id integer [pk, increment]
+  author_id varchar(36) [not null, ref: > employees.id]
+  content text [not null, note: 'HTML content via TinyMCE']
+  created_at timestamp [default: `current_timestamp`]
+  updated_at timestamp
+}
+
+Table post_comments {
+  id integer [pk, increment]
+  post_id integer [not null, ref: > posts.id]
+  author_id varchar(36) [not null, ref: > employees.id]
+  content text [not null, note: 'HTML content via TinyMCE']
+  created_at timestamp [default: `current_timestamp`]
+  updated_at timestamp
+}
+
+Table post_likes {
+  post_id integer [ref: > posts.id]
+  employee_id varchar(36) [ref: > employees.id]
+  created_at timestamp [default: `current_timestamp`]
+  indexes { (post_id, employee_id) [pk] }
+}
+
+
+Table attachments {
+  id integer [pk, increment]
+  uploaded_by varchar(36) [ref: > employees.id]
+  file_name varchar(255) [not null]
+  file_type varchar(100)
+  file_size integer [note: 'bytes']
+  file_path varchar(512) [not null]
+  attachable_type varchar(255) [not null, note: 'Polymorphic: App\Models\Employee, App\Models\Post']
+  attachable_id varchar(36) [not null, note: 'ID of the related record (String to support both Int and UUID)']
+  created_at timestamp [default: `current_timestamp`]
+}

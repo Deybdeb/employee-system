@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@source '../views/**/*.blade.php';
+@source '../js/**/*.vue';
+@source '../js/**/*.js';
+
+@theme {
+    --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+
+    --color-brand-yellow: #fdbd31;
+    --color-brand-yellow-hover: #eaca2c;
+    --color-brand-dark: #333333;
+    --color-brand-grey: #7d7d7d;
+    --color-brand-light: #f3f4f8;
+    --color-brand-danger: #ff5252;
+    --color-brand-danger-bg: #fff8f8;
+
+    --width-sidebar: 260px;
+    --spacing-sidebar: 260px;
+
+    --radius-card: 12px;
+
+    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.02);
+}

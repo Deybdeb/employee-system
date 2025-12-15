@@ -1,0 +1,7 @@
+App\Models\Employee::create([
+    'first_name' => 'Admin',
+    'last_name' => 'User',
+    'personal_email' => 'admin.priv@email.com',
+    'work_email' => 'admin@email.com',
+    'password' => 'password',
+]);
