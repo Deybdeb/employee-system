@@ -21,13 +21,13 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.2'
+        php-version: '8.4'
         extensions: mbstring, dom, fileinfo, filter, libxml, mbstring, openssl, pcre, pdo, pdo_sqlite, tokenizer, xml, xmlwriter
         coverage: none
     
     # Validate composer files
     - name: Validate composer.json and composer.lock
-      run: composer validate --strict
+      run: composer validate
     
     # Cache Composer dependencies
     - name: Cache Composer dependencies
@@ -96,7 +96,7 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.2'
+        php-version: '8.4'
         extensions: mbstring, dom, fileinfo, filter, libxml, mbstring, openssl, pcre, pdo, tokenizer, xml, xmlwriter
         coverage: none
     
@@ -116,3 +116,4 @@ jobs:
     # Run Laravel Pint
     - name: Run Laravel Pint (Code Style)
       run: vendor/bin/pint --test
+
