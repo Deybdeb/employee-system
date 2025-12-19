@@ -4,14 +4,38 @@ import { computed } from 'vue';
 
 const page = usePage();
 
+// Access the route helper from Ziggy via the global window or page props
+// If not available globally, we can construct URLs manually
+const route = (name, params = {}) => {
+    // Try to use window.route if available (Ziggy plugin)
+    if (typeof window !== 'undefined' && window.route) {
+        return window.route(name, params);
+    }
+    // Fallback: return a simple URI (won't work perfectly but prevents errors)
+    const routes = {
+        'dashboard': '/dashboard',
+        'my-info.index': '/my-info',
+        'leave-requests.index': '/leave-requests',
+    };
+    return routes[name] || `/${name.replace('.', '/')}`;
+};
+
+// --- THE FIX IS HERE: Using route() helper for all internal links ---
 const navItems = [
-    { name: 'Dashboard', icon: 'fas fa-home', href: '/dashboard' },
-    { name: 'My Info', icon: 'far fa-user-circle', href: '/my-info' },
+    { name: 'Dashboard', icon: 'fas fa-home', href: route('dashboard') }, 
+    { name: 'My Info', icon: 'far fa-user-circle', href: route('my-info.index') }, 
+    { name: 'Leave Requests', icon: 'fas fa-calendar-alt', href: route('leave-requests.index') }, 
 ];
+// ------------------------------------------------------------------
+
 
 const headerText = computed(() => {
-    if (page.url.startsWith('/my-info')) {
+    if (page.url.startsWith(route('my-info.index'))) {
         return "PIM (Personnel Information Management) - Centralized database for managing employee records and job-related information.";
+    }
+    // Also update the check here to use the named route for robustness
+    if (page.url.startsWith(route('leave-requests.index'))) {
+        return "Leave Management - Track, view, and manage employee time-off requests and history.";
     }
     return "Dashboard - Overview of key HR information, announcements, and quick links to main modules.";
 });
@@ -61,7 +85,7 @@ const headerText = computed(() => {
                         <Link
                             :href="item.href"
                             class="flex items-center py-4 pl-8 pr-6 text-sm font-medium transition-all duration-200 w-full rounded-r-full mr-12 border-l-4 border-transparent"
-                            :class="$page.url.startsWith(item.href)
+                            :class="$page.url.startsWith(item.href) // Checks if URL starts with item.href (e.g., /leave-requests or /leave-requests/create)
                                 ? 'bg-brand-yellow text-gray-900 border-l-brand-dark'
                                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
                         >
@@ -71,11 +95,10 @@ const headerText = computed(() => {
                             {{ item.name }}
                         </Link>
                     </li>
-
+                    
                     <li>
                         <Link
-                            href="/logout"
-                            method="post"
+                            :href="route('logout')"  method="post"
                             as="button"
                             class="flex w-full items-center py-4 pl-8 pr-6 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors rounded-r-full mr-12 border-l-4 border-transparent"
                         >

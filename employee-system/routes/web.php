@@ -4,36 +4,61 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MyInfoController;
 use App\Http\Controllers\TestingController;
+use App\Http\Controllers\LeaveRequestController; // Your new controller
+
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\App;
 
 
+// Default landing: redirect root to dashboard (auth will send guests to login)
+Route::get('/', function () {
+    return redirect()->route('dashboard');
+});
+
+
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [LoginController::class, 'create'])->name('login');
-    Route::post('/login', [LoginController::class, 'store']);
+    // --- AUTHENTICATION ROUTES (MUST BE NAMED FOR FRAMEWORK REDIRECTS) ---
+    
+    // 1. Show the login form
+    Route::get('login', [LoginController::class, 'create'])->name('login'); 
+    
+    // 2. Handle the login form submission
+    Route::post('login', [LoginController::class, 'store']); 
+    
+    // 3. Add any other guest routes here (like registration, if applicable)
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/', function () { return redirect('/dashboard'); });
-    Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
-
+    // --- AUTHENTICATION LOGOUT ---
+    // This is often named 'logout' or handled internally by Laravel
+    Route::post('logout', [LoginController::class, 'destroy'])->name('logout');
+    
+    // --- DASHBOARD AND CORE ROUTES ---
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::post('/attendance/clock-in', [DashboardController::class, 'clockIn']);
-    Route::post('/attendance/clock-out', [DashboardController::class, 'clockOut']);
 
-    Route::get('/my-info', fn() => redirect()->route('my-info.personal'));
-    Route::get('/my-info/personal', [MyInfoController::class, 'showPersonal'])->name('my-info.personal');
-    Route::post('/my-info/personal', [MyInfoController::class, 'updatePersonal']);
-    Route::get('/my-info/contact', [MyInfoController::class, 'showContact'])->name('my-info.contact');
-    Route::post('/my-info/contact', [MyInfoController::class, 'updateContact']);
-
+    // --- LEAVE MODULE ROUTES ---
+    Route::prefix('leave-requests')->group(function () {
+        // Show the user their list/history of requests
+        Route::get('/', [LeaveRequestController::class, 'index'])->name('leave-requests.index');
+        
+        // Show the form to create a new request
+        Route::get('/create', [LeaveRequestController::class, 'create'])->name('leave-requests.create');
+        
+        // Store the new request submitted from the form
+        Route::post('/', [LeaveRequestController::class, 'store'])->name('leave-requests.store');
+    });
+    // ---------------------------
+    
+    // --- MY INFO MODULE ROUTES ---
+    Route::prefix('my-info')->group(function () {
+        Route::get('/', [MyInfoController::class, 'index'])->name('my-info.index');
+        // Add more MyInfo routes here (e.g., PUT or POST for updates)
+    });
+    // ---------------------------
 });
 
 
-
 if (App::isLocal()) {
-    Route::post('/testing/time-travel/{unit}/{amount}', [TestingController::class, 'adjustTime'])->name('testing.time-adjust');
-    Route::post('/testing/time-reset', [TestingController::class, 'resetTime'])->name('testing.time-reset');
-
-    Route::post('/testing/clear-attendances', [TestingController::class, 'clearAttendances'])->name('testing.clear-attendances');
+    // --- TESTING ROUTES ---
+    Route::get('/testing', [TestingController::class, 'index'])->name('testing.index');
 }
