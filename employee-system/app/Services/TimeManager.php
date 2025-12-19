@@ -8,17 +8,17 @@ use Illuminate\Support\Facades\Auth;
 class TimeManager
 {
     private static ?self $instance = null;
+
     private ?Carbon $now = null;
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
     public static function getInstance(): self
     {
         if (self::$instance === null) {
-            self::$instance = new self();
+            self::$instance = new self;
         }
+
         return self::$instance;
     }
 
@@ -33,13 +33,14 @@ class TimeManager
                 $this->now = Carbon::now();
             }
         }
+
         return $this->now->copy();
     }
 
     public function adjust(string $unit, int $amount): Carbon
     {
         $currentTime = $this->now();
-        $newTime = $currentTime->{'add' . ucfirst($unit) . 's'}($amount);
+        $newTime = $currentTime->{'add'.ucfirst($unit).'s'}($amount);
 
         $this->now = $newTime->copy();
         session(['mocked_time' => $newTime->toDateTimeString()]);

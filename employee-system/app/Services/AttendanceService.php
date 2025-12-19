@@ -4,7 +4,6 @@ namespace App\Services;
 
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use App\Services\TimeManager;
 
 class AttendanceService
 {
@@ -23,6 +22,7 @@ class AttendanceService
         $todayAttendances = $allAttendances->filter(function ($att) use ($now) {
             $clockIn = Carbon::parse($att->clock_in)->utc();
             $isActive = is_null($att->clock_out);
+
             return $clockIn->isSameDay($now) || $isActive;
         });
 
@@ -42,8 +42,8 @@ class AttendanceService
                 'last_action_label' => $isClockedIn ? 'Timed In' : 'Timed Out',
                 'last_action_sub_label' => $isClockedIn ? 'Timed In:' : 'Timed Out:',
                 'last_action_time_formatted' => $lastActionFormatted,
-                'week_date_range_formatted' => $startOfWeek->format('M d') . ' - ' . $startOfWeek->copy()->addDays(6)->format('M d'),
-            ]
+                'week_date_range_formatted' => $startOfWeek->format('M d').' - '.$startOfWeek->copy()->addDays(6)->format('M d'),
+            ],
         ];
     }
 
@@ -64,7 +64,7 @@ class AttendanceService
 
         return [
             'seconds' => $totalSeconds,
-            'formatted' => floor($totalSeconds / 3600) . 'h ' . floor(($totalSeconds / 60) % 60) . 'm'
+            'formatted' => floor($totalSeconds / 3600).'h '.floor(($totalSeconds / 60) % 60).'m',
         ];
     }
 
@@ -83,23 +83,27 @@ class AttendanceService
             }
         }
 
-        if (!$lastActionTime) {
+        if (! $lastActionTime) {
             return 'Not yet today';
         }
+
         return Carbon::parse($lastActionTime)->tz($this->timezone)->format('M jS \a\t g:i A');
     }
 
     private function getWeekDuration(Collection $attendances): string
     {
         $totalSeconds = $attendances->reduce(function ($carry, $att) {
-             if ($att->clock_out) {
+            if ($att->clock_out) {
                 $clockIn = Carbon::parse($att->clock_in)->utc();
                 $clockOut = Carbon::parse($att->clock_out)->utc();
+
                 return $carry + max(0, $clockOut->timestamp - $clockIn->timestamp);
             }
+
             return $carry;
         }, 0);
-        return floor($totalSeconds / 3600) . 'h ' . floor(($totalSeconds / 60) % 60) . 'm';
+
+        return floor($totalSeconds / 3600).'h '.floor(($totalSeconds / 60) % 60).'m';
     }
 
     private function getChartData(Collection $attendances, Carbon $now, Carbon $startOfWeek): array
@@ -111,7 +115,7 @@ class AttendanceService
             $date = $startOfWeek->copy()->addDays($i);
             $dailyTotalSeconds = $attendances->reduce(function ($carry, $att) use ($date, $now) {
                 $clockIn = Carbon::parse($att->clock_in)->utc();
-                if (!$clockIn->isSameDay($date)) {
+                if (! $clockIn->isSameDay($date)) {
                     return $carry;
                 }
                 $clockOut = $att->clock_out
@@ -125,6 +129,7 @@ class AttendanceService
                 }
 
                 $diff = $clockOut->timestamp - $clockIn->timestamp;
+
                 return $carry + max(0, $diff);
             }, 0);
 
@@ -137,6 +142,7 @@ class AttendanceService
                 'height' => $maxHoursForChart > 0 ? min(100, ($hours / $maxHoursForChart) * 100) : 0,
             ];
         }
+
         return $chartData;
     }
 }

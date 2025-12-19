@@ -12,7 +12,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $attendanceService = new AttendanceService();
+        $attendanceService = new AttendanceService;
         $now = TimeManager::getInstance()->now();
         $employeeId = Auth::id();
 
@@ -52,12 +52,13 @@ class DashboardController extends Controller
             ->whereNull('clock_out')
             ->exists();
 
-        if (!$hasActiveSession) {
+        if (! $hasActiveSession) {
             Attendance::create([
                 'employee_id' => $employeeId,
                 'clock_in' => $now,
             ]);
         }
+
         return redirect()->back();
     }
 
@@ -72,6 +73,7 @@ class DashboardController extends Controller
         if ($attendance) {
             $attendance->update(['clock_out' => $now]);
         }
+
         return redirect()->back();
     }
 }

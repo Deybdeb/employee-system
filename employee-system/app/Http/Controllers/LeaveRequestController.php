@@ -3,11 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Inertia\Inertia; // 
+use Inertia\Inertia; //
 
 class LeaveRequestController extends Controller
 {
-    
     public function index()
     {
         // Dummy data for testing the view
@@ -17,7 +16,7 @@ class LeaveRequestController extends Controller
         ];
 
         return Inertia::render('Leave/index', [
-            'requests' => $leaveRequests
+            'requests' => $leaveRequests,
         ]);
     }
 
@@ -27,9 +26,9 @@ class LeaveRequestController extends Controller
     public function create()
     {
         $leaveTypes = ['Vacation', 'Sick', 'Personal', 'Unpaid'];
-        
+
         return Inertia::render('Leave/create', [
-            'leaveTypes' => $leaveTypes
+            'leaveTypes' => $leaveTypes,
         ]);
     }
 

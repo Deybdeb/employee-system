@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('leave_requests', function (Blueprint $table) {
             $table->id();
-            
+
             // 1. Employee who requested leave (Foreign Key to 'users' table)
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            
+
             // 2. Leave details
             $table->date('start_date');
             $table->date('end_date');
@@ -27,7 +27,7 @@ return new class extends Migration
 
             // 4. Status (e.g., Pending, Approved, Rejected)
             $table->string('status', 20)->default('Pending');
-            
+
             // 5. Audit fields
             $table->timestamp('reviewed_at')->nullable();
             $table->foreignId('reviewer_id')->nullable()->constrained('users');

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Address;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use App\Models\Address;
 
 class MyInfoController extends Controller
 {
@@ -14,22 +14,24 @@ class MyInfoController extends Controller
         $employee = Auth::user();
         $employee->refresh();
         $employee->load('addresses');
+
         return $employee;
     }
 
     public function showPersonal()
     {
         return Inertia::render('MyInfo/Edit', [
-            'employee' => $this->getEmployeeData()
+            'employee' => $this->getEmployeeData(),
         ]);
     }
 
     public function showContact()
     {
         $employee = $this->getEmployeeData();
+
         return Inertia::render('MyInfo/Contact', [
             'employee' => $employee,
-            'address' => $employee->addresses->where('type', 'home')->first()
+            'address' => $employee->addresses->where('type', 'home')->first(),
         ]);
     }
 
