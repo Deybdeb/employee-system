@@ -1,9 +1,35 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Link, router } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 const props = defineProps({
     requests: Array,
+    leaveTypes: Array,
+});
+
+const form = useForm({
+    type: '',
+    start_date: '',
+    end_date: '',
+    reason: '',
+});
+
+const submit = () => {
+    form.post(route('leave-requests.store'), {
+        onSuccess: () => {
+            form.reset();
+        },
+    });
+};
+
+const durationDays = computed(() => {
+    if (!form.start_date || !form.end_date) return 0;
+    const start = new Date(form.start_date);
+    const end = new Date(form.end_date);
+    const diffTime = Math.abs(end - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    return diffDays;
 });
 
 const getStatusClass = (status) => {
@@ -29,7 +55,9 @@ const getTypeIcon = (type) => {
 
 const cancelRequest = (id) => {
     if (confirm('Are you sure you want to cancel this leave request?')) {
-        router.post(route('leave-requests.cancel', id));
+        form.post(route('leave-requests.cancel', id), {
+            preserveScroll: true,
+        });
     }
 };
 </script>
@@ -37,31 +65,134 @@ const cancelRequest = (id) => {
 <template>
     <AuthenticatedLayout>
         <template #header>
-            <div class="flex items-center justify-between">
-                <h2 class="text-xl font-semibold leading-tight text-gray-800">My Leave Requests</h2>
-                <Link
-                    :href="route('leave-requests.create')"
-                    class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
-                >
-                    <i class="fas fa-plus mr-2"></i>
-                    New Request
-                </Link>
-            </div>
+            <h2 class="text-xl font-semibold leading-tight text-gray-800">Leave Management</h2>
         </template>
 
         <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-8">
+                <!-- Request Form Section -->
+                <div class="bg-white p-8 shadow sm:rounded-lg">
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            <i class="fas fa-paper-plane text-indigo-600 mr-2"></i>
+                            Request Leave
+                        </h3>
+                        <p class="text-sm text-gray-600 mt-1">Fill out the form below to submit a new leave request.</p>
+                    </div>
+
+                    <form @submit.prevent="submit" class="space-y-6">
+                        <!-- Leave Type -->
+                        <div>
+                            <label for="type" class="block text-sm font-medium text-gray-700 mb-2">
+                                Leave Type <span class="text-red-500">*</span>
+                            </label>
+                            <select
+                                id="type"
+                                v-model="form.type"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="{ 'border-red-500': form.errors.type }"
+                                required
+                            >
+                                <option value="">Select leave type</option>
+                                <option v-for="type in leaveTypes" :key="type" :value="type">
+                                    {{ type }}
+                                </option>
+                            </select>
+                            <p v-if="form.errors.type" class="mt-1 text-sm text-red-600">{{ form.errors.type }}</p>
+                        </div>
+
+                        <!-- Date Range -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Start Date <span class="text-red-500">*</span>
+                                </label>
+                                <input
+                                    id="start_date"
+                                    type="date"
+                                    v-model="form.start_date"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    :class="{ 'border-red-500': form.errors.start_date }"
+                                    :min="new Date().toISOString().split('T')[0]"
+                                    required
+                                />
+                                <p v-if="form.errors.start_date" class="mt-1 text-sm text-red-600">{{ form.errors.start_date }}</p>
+                            </div>
+
+                            <div>
+                                <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">
+                                    End Date <span class="text-red-500">*</span>
+                                </label>
+                                <input
+                                    id="end_date"
+                                    type="date"
+                                    v-model="form.end_date"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    :class="{ 'border-red-500': form.errors.end_date }"
+                                    :min="form.start_date || new Date().toISOString().split('T')[0]"
+                                    required
+                                />
+                                <p v-if="form.errors.end_date" class="mt-1 text-sm text-red-600">{{ form.errors.end_date }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Duration Display -->
+                        <div v-if="durationDays > 0" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <p class="text-sm text-blue-800">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <strong>Duration:</strong> {{ durationDays }} {{ durationDays === 1 ? 'day' : 'days' }}
+                            </p>
+                        </div>
+
+                        <!-- Reason -->
+                        <div>
+                            <label for="reason" class="block text-sm font-medium text-gray-700 mb-2">
+                                Reason <span class="text-red-500">*</span>
+                            </label>
+                            <textarea
+                                id="reason"
+                                v-model="form.reason"
+                                rows="4"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                :class="{ 'border-red-500': form.errors.reason }"
+                                placeholder="Please provide a detailed reason for your leave request..."
+                                required
+                            ></textarea>
+                            <p class="mt-1 text-sm text-gray-500">{{ form.reason?.length || 0 }}/1000 characters</p>
+                            <p v-if="form.errors.reason" class="mt-1 text-sm text-red-600">{{ form.errors.reason }}</p>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="flex items-center justify-end pt-4 border-t">
+                            <button
+                                type="submit"
+                                :disabled="form.processing"
+                                class="px-6 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <span v-if="form.processing">
+                                    <i class="fas fa-spinner fa-spin mr-2"></i>Submitting...
+                                </span>
+                                <span v-else>
+                                    <i class="fas fa-paper-plane mr-2"></i>Submit Request
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Leave History Section -->
                 <div class="bg-white shadow sm:rounded-lg overflow-hidden">
+                    <div class="px-8 py-6 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            <i class="fas fa-history text-indigo-600 mr-2"></i>
+                            Leave Request History
+                        </h3>
+                        <p class="text-sm text-gray-600 mt-1">View and manage your previous leave requests.</p>
+                    </div>
+
                     <div v-if="!requests || requests.length === 0" class="p-12 text-center">
                         <i class="fas fa-calendar-times text-6xl text-gray-300 mb-4"></i>
-                        <p class="text-gray-500 mb-4">You haven't submitted any leave requests yet.</p>
-                        <Link
-                            :href="route('leave-requests.create')"
-                            class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700"
-                        >
-                            <i class="fas fa-plus mr-2"></i>
-                            Submit Your First Request
-                        </Link>
+                        <p class="text-gray-500">No leave requests yet. Submit your first request above!</p>
                     </div>
 
                     <div v-else class="overflow-x-auto">

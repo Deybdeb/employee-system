@@ -35,14 +35,17 @@ Route::middleware('auth')->group(function () {
 
     // --- LEAVE MODULE ROUTES ---
     Route::prefix('leave-requests')->group(function () {
-        // Show the user their list/history of requests
+        // Employee routes
         Route::get('/', [LeaveRequestController::class, 'index'])->name('leave-requests.index');
-
-        // Show the form to create a new request
         Route::get('/create', [LeaveRequestController::class, 'create'])->name('leave-requests.create');
-
-        // Store the new request submitted from the form
         Route::post('/', [LeaveRequestController::class, 'store'])->name('leave-requests.store');
+        Route::post('/{id}/cancel', [LeaveRequestController::class, 'cancel'])->name('leave-requests.cancel');
+        
+        // HR/Admin routes
+        Route::get('/admin', [LeaveRequestController::class, 'admin'])->name('leave-requests.admin');
+        Route::post('/{id}/approve', [LeaveRequestController::class, 'approve'])->name('leave-requests.approve');
+        Route::post('/{id}/decline', [LeaveRequestController::class, 'decline'])->name('leave-requests.decline');
+        Route::delete('/{id}', [LeaveRequestController::class, 'destroy'])->name('leave-requests.destroy');
     });
     // ---------------------------
 
