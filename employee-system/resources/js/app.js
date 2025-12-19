@@ -1,21 +1,45 @@
 import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/vue3";
-// Use Ziggy from npm package
-import { ZiggyVue } from "ziggy-js";
 
+// Simple route helper function
+const route = (name, params = {}) => {
+    const routes = {
+        'dashboard': '/dashboard',
+        'my-info.index': '/my-info',
+        'leave-requests.index': '/leave-requests',
+        'leave-requests.create': '/leave-requests/create',
+        'leave-requests.store': '/leave-requests',
+        'leave-requests.admin': '/leave-requests/admin',
+        'logout': '/logout',
+    };
+    
+    // Handle routes with parameters
+    if (typeof params === 'number' || typeof params === 'string') {
+        if (name === 'leave-requests.approve') return `/leave-requests/${params}/approve`;
+        if (name === 'leave-requests.decline') return `/leave-requests/${params}/decline`;
+        if (name === 'leave-requests.cancel') return `/leave-requests/${params}/cancel`;
+        if (name === 'leave-requests.destroy') return `/leave-requests/${params}`;
+    }
+    
+    return routes[name] || `/${name.replace(/\./g, '/')}`;
+};
+
+// Make it available globally
+window.route = route;
 
 createInertiaApp({
-    // Component Resolver (Confirmed Correct)
     resolve: (name) => {
         const pages = import.meta.glob('./Pages/**/*.vue', { eager: true });
-        return pages[`./Pages/${name}.vue`]; 
+        return pages[`./Pages/${name}.vue`];
     },
 
     setup({ el, App, props, plugin }) {
-        createApp({ render: () => h(App, props) })
-            .use(plugin)
-            // Register Ziggy with routes from server props, or empty object as fallback
-            .use(ZiggyVue, props.initialPage.props.ziggy || {})
-            .mount(el);
+        const app = createApp({ render: () => h(App, props) })
+            .use(plugin);
+        
+        // Make route available in all Vue components
+        app.config.globalProperties.route = route;
+        
+        app.mount(el);
     },
 });

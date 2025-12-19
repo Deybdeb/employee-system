@@ -13,18 +13,35 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. ADD THE CALL TO YOUR USER SEEDER
-        // This is the standard, clean way to run your specific seeder.
-        $this->call(UserSeeder::class); 
-
-        // 2. REMOVE THE FACTORY CODE YOU HAD HERE
-        // (You can use the factory in UserSeeder.php if you want more users,
-        // but it was causing issues here)
+        // Set existing admin user as admin
+        $admin = User::where('email', 'admin@example.com')->first();
+        if ($admin) {
+            $admin->update(['is_admin' => true]);
+            $this->command->info('✓ admin@example.com set as admin');
+        } else {
+            $this->command->warn('✗ admin@example.com not found');
+        }
         
-        // Example if you still want a quick factory user (but less clean):
-        // User::factory()->create([
-        //     "name" => "Test User",
-        //     "email" => "test@example.com",
-        // ]);
+        // Create regular employee user
+        $regularUser = User::where('email', 'user123@example.com')->first();
+        if (!$regularUser) {
+            User::create([
+                'name' => 'user',
+                'email' => 'user123@example.com',
+                'password' => bcrypt('password123'),
+                'is_admin' => false,
+            ]);
+            $this->command->info('✓ user123@example.com created as regular employee');
+        } else {
+            // Update existing user
+            $regularUser->update([
+                'name' => 'user',
+                'email' => 'user123@example.com',
+            ]);
+            $this->command->info('✓ user123@example.com updated');
+        }
+        
+        // Call other seeders
+        $this->call(UserSeeder::class);
     }
 }

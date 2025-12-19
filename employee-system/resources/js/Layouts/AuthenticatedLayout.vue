@@ -16,16 +16,40 @@ const route = (name, params = {}) => {
         'dashboard': '/dashboard',
         'my-info.index': '/my-info',
         'leave-requests.index': '/leave-requests',
+        'leave-requests.create': '/leave-requests/create',
+        'leave-requests.store': '/leave-requests',
+        'leave-requests.admin': '/leave-requests/admin',
+        'leave-requests.approve': (id) => `/leave-requests/${id}/approve`,
+        'leave-requests.decline': (id) => `/leave-requests/${id}/decline`,
+        'leave-requests.cancel': (id) => `/leave-requests/${id}/cancel`,
+        'logout': '/logout',
     };
-    return routes[name] || `/${name.replace('.', '/')}`;
+    
+    if (typeof routes[name] === 'function') {
+        return routes[name](params);
+    }
+    return routes[name] || `/${name.replace(/\./g, '/')}`;
 };
 
 // --- THE FIX IS HERE: Using route() helper for all internal links ---
-const navItems = [
-    { name: 'Dashboard', icon: 'fas fa-home', href: route('dashboard') }, 
-    { name: 'My Info', icon: 'far fa-user-circle', href: route('my-info.index') }, 
-    { name: 'Leave Requests', icon: 'fas fa-calendar-alt', href: route('leave-requests.index') }, 
-];
+const navItems = computed(() => {
+    const items = [
+        { name: 'Dashboard', icon: 'fas fa-home', href: route('dashboard') }, 
+        { name: 'My Info', icon: 'far fa-user-circle', href: route('my-info.index') }, 
+        { name: 'Leave Requests', icon: 'fas fa-calendar-alt', href: route('leave-requests.index') }, 
+    ];
+    
+    // Add HR Admin menu item for admin users
+    if (page.props.auth?.user?.is_admin) {
+        items.push({ 
+            name: 'Leave Management (HR)', 
+            icon: 'fas fa-user-shield', 
+            href: route('leave-requests.admin') 
+        });
+    }
+    
+    return items;
+});
 // ------------------------------------------------------------------
 
 
@@ -54,7 +78,7 @@ const headerText = computed(() => {
                     <div class="w-9 h-9 bg-white/30 backdrop-blur-sm rounded-full border border-white/50 flex items-center justify-center overflow-hidden shadow-sm">
                         <i class="fas fa-user text-white text-lg mt-1 opacity-90"></i>
                     </div>
-                    <span>Admin User <i class="fas fa-caret-down ml-1 opacity-70"></i></span>
+                    <span>{{ page.props.auth?.user?.name || 'User' }} <i class="fas fa-caret-down ml-1 opacity-70"></i></span>
                 </div>
             </div>
         </header>
@@ -62,14 +86,12 @@ const headerText = computed(() => {
 
         <aside class="fixed top-0 bottom-0 left-0 w-[260px] bg-white z-30 hidden lg:flex flex-col py-8 rounded-r-[50px] shadow-[0_12px_40px_rgba(0,0,0,0.12)] overflow-hidden">
 
-            <div class="mb-10 px-8">
-                <div class="flex items-center gap-2.5 font-bold text-xl text-gray-700">
-                    <div class="bg-brand-yellow text-white p-2 rounded-lg text-sm shadow-sm">
-                        <i class="fas fa-cube"></i>
-                    </div>
-                    <span>BeeConnected</span>
-                </div>
-                <div class="text-[10px] text-gray-400 mt-1.5 ml-10 font-medium">Powered by PurpleBug</div>
+            <div class="mb-5 px-6 py-4">
+                <a href="https://purplebug.net/" target="_blank" rel="noopener noreferrer" class="block">
+                    <img src="https://purplebug.beeconnectedsolutions.com/web/images/Logo_BeeConnected_20250725.png?v=1757391258012" 
+                         alt="BeeConnected Logo" 
+                         class="w-full h-auto max-w-[200px] mx-auto hover:opacity-80 transition-opacity cursor-pointer">
+                </a>
             </div>
 
 
