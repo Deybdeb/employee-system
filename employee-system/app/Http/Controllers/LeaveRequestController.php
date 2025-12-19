@@ -34,7 +34,7 @@ class LeaveRequestController extends Controller
 
         return Inertia::render('Leave/index', [
             'requests' => $leaveRequests,
-            'leaveTypes' => ['Vacation', 'Sick', 'Personal', 'Unpaid', 'Emergency']
+            'leaveTypes' => ['Vacation', 'Sick', 'Personal', 'Unpaid', 'Emergency'],
         ]);
     }
 
@@ -44,9 +44,9 @@ class LeaveRequestController extends Controller
     public function create()
     {
         $leaveTypes = ['Vacation', 'Sick', 'Personal', 'Unpaid', 'Emergency'];
-        
+
         return Inertia::render('Leave/create', [
-            'leaveTypes' => $leaveTypes
+            'leaveTypes' => $leaveTypes,
         ]);
     }
 
@@ -80,7 +80,7 @@ class LeaveRequestController extends Controller
     public function admin()
     {
         // Check if user is admin/HR
-        if (!Auth::user()->is_admin) {
+        if (! Auth::user()->is_admin) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
@@ -104,7 +104,7 @@ class LeaveRequestController extends Controller
             });
 
         return Inertia::render('Leave/Admin', [
-            'requests' => $leaveRequests
+            'requests' => $leaveRequests,
         ]);
     }
 
@@ -113,12 +113,12 @@ class LeaveRequestController extends Controller
      */
     public function approve($id)
     {
-        if (!Auth::user()->is_admin) {
+        if (! Auth::user()->is_admin) {
             return back()->with('error', 'Unauthorized access.');
         }
 
         $leaveRequest = LeaveRequest::findOrFail($id);
-        
+
         $leaveRequest->update([
             'status' => 'Approved',
             'reviewer_id' => Auth::id(),
@@ -133,12 +133,12 @@ class LeaveRequestController extends Controller
      */
     public function decline($id)
     {
-        if (!Auth::user()->is_admin) {
+        if (! Auth::user()->is_admin) {
             return back()->with('error', 'Unauthorized access.');
         }
 
         $leaveRequest = LeaveRequest::findOrFail($id);
-        
+
         $leaveRequest->update([
             'status' => 'Rejected',
             'reviewer_id' => Auth::id(),
@@ -170,7 +170,7 @@ class LeaveRequestController extends Controller
      */
     public function destroy($id)
     {
-        if (!Auth::user()->is_admin) {
+        if (! Auth::user()->is_admin) {
             return back()->with('error', 'Unauthorized access.');
         }
 

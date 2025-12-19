@@ -40,7 +40,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/create', [LeaveRequestController::class, 'create'])->name('leave-requests.create');
         Route::post('/', [LeaveRequestController::class, 'store'])->name('leave-requests.store');
         Route::post('/{id}/cancel', [LeaveRequestController::class, 'cancel'])->name('leave-requests.cancel');
-        
+
         // HR/Admin routes
         Route::get('/admin', [LeaveRequestController::class, 'admin'])->name('leave-requests.admin');
         Route::post('/{id}/approve', [LeaveRequestController::class, 'approve'])->name('leave-requests.approve');
