@@ -1,0 +1,124 @@
+# USE THIS VERSION IF YOUR REPOSITORY STRUCTURE IS:
+# repository-root/
+#   └── employee-system/  (Laravel app subdirectory)
+#
+# To use: rename this file to ci.yml and delete the other ci.yml
+
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: employee-system
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    # Setup PHP
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, dom, fileinfo, filter, libxml, mbstring, openssl, pcre, pdo, pdo_sqlite, tokenizer, xml, xmlwriter
+        coverage: none
+    
+    # Validate composer files
+    - name: Validate composer.json and composer.lock
+      run: composer validate --strict
+    
+    # Cache Composer dependencies
+    - name: Cache Composer dependencies
+      uses: actions/cache@v3
+      with:
+        path: employee-system/vendor
+        key: ${{ runner.os }}-composer-${{ hashFiles('employee-system/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-composer-
+    
+    # Install Composer dependencies
+    - name: Install Composer Dependencies
+      run: composer install --no-ansi --no-interaction --no-progress --prefer-dist --optimize-autoloader
+    
+    # Setup Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+        cache-dependency-path: 'employee-system/package-lock.json'
+    
+    # Copy .env file
+    - name: Copy .env
+      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+    
+    # Generate application key
+    - name: Generate Application Key
+      run: php artisan key:generate
+    
+    # Directory permissions
+    - name: Set Directory Permissions
+      run: chmod -R 777 storage bootstrap/cache
+    
+    # Install NPM dependencies
+    - name: Install NPM Dependencies
+      run: npm ci
+    
+    # Build assets
+    - name: Build Assets
+      run: npm run build
+    
+    # Create Database
+    - name: Create Database
+      run: touch database/database.sqlite
+    
+    # Run migrations
+    - name: Run Migrations
+      run: php artisan migrate --force
+    
+    # Run tests
+    - name: Execute Tests (Unit and Feature)
+      run: vendor/bin/phpunit --testdox
+
+  quality:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: employee-system
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    # Setup PHP
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, dom, fileinfo, filter, libxml, mbstring, openssl, pcre, pdo, tokenizer, xml, xmlwriter
+        coverage: none
+    
+    # Cache Composer dependencies
+    - name: Cache Composer dependencies
+      uses: actions/cache@v3
+      with:
+        path: employee-system/vendor
+        key: ${{ runner.os }}-composer-${{ hashFiles('employee-system/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-composer-
+    
+    # Install Composer dependencies
+    - name: Install Composer Dependencies
+      run: composer install --no-ansi --no-interaction --no-progress --prefer-dist --optimize-autoloader
+    
+    # Run Laravel Pint
+    - name: Run Laravel Pint (Code Style)
+      run: vendor/bin/pint --test
