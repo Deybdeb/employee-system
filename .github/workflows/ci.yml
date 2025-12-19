@@ -113,7 +113,22 @@ jobs:
     - name: Install Composer Dependencies
       run: composer install --no-ansi --no-interaction --no-progress --prefer-dist --optimize-autoloader
     
-    # Run Laravel Pint
-    - name: Run Laravel Pint (Code Style)
-      run: vendor/bin/pint --test
+    # Fix code style with Laravel Pint
+    - name: Fix Code Style
+      run: vendor/bin/pint
+    
+    # Commit style fixes if any
+    - name: Commit Style Fixes
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add -A
+        git diff --quiet && git diff --staged --quiet || git commit -m "Apply Laravel Pint code style fixes"
+    
+    # Push changes
+    - name: Push Changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
 
