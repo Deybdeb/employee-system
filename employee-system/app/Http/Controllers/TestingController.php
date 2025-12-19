@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\TimeManager;
 use App\Models\Attendance;
+use App\Services\TimeManager;
 use Illuminate\Support\Facades\Auth;
 
 class TestingController extends Controller
 {
     public function adjustTime(string $unit, int $amount)
     {
-        if (!app()->isLocal()) {
+        if (! app()->isLocal()) {
             return redirect()->back();
         }
 
@@ -19,13 +19,14 @@ class TestingController extends Controller
 
         Auth::user()->update(['mocked_time' => $newTime]);
 
-        session()->flash('success_message', 'Time traveled to: ' . $newTime->format('M d, Y g:i A'));
+        session()->flash('success_message', 'Time traveled to: '.$newTime->format('M d, Y g:i A'));
+
         return redirect()->back(303);
     }
 
     public function resetTime()
     {
-        if (!app()->isLocal()) {
+        if (! app()->isLocal()) {
             return redirect()->back();
         }
 
@@ -35,6 +36,7 @@ class TestingController extends Controller
         $timeManager->reset();
 
         session()->flash('success_message', 'Time has been reset to current real time.');
+
         return redirect()->back(303);
     }
 
@@ -44,6 +46,7 @@ class TestingController extends Controller
             Attendance::where('employee_id', Auth::id())->delete();
             session()->flash('success_message', 'All your time entries have been cleared.');
         }
+
         return redirect()->back(303);
     }
 }
