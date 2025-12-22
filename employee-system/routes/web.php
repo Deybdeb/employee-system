@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\MyInfoController;
@@ -22,7 +24,17 @@ Route::middleware('guest')->group(function () {
     // 2. Handle the login form submission
     Route::post('login', [LoginController::class, 'store']);
 
-    // 3. Add any other guest routes here (like registration, if applicable)
+    // 3. Registration routes
+    Route::get('register', [RegisterController::class, 'create'])->name('register');
+    Route::post('register', [RegisterController::class, 'store']);
+
+    // 4. Password reset routes with OTP
+    Route::get('forgot-password', [PasswordResetController::class, 'requestForm'])->name('password.request');
+    Route::post('forgot-password', [PasswordResetController::class, 'sendOTP'])->name('password.email');
+    Route::get('verify-otp', [PasswordResetController::class, 'verifyForm'])->name('password.verify');
+    Route::post('verify-otp', [PasswordResetController::class, 'verifyOTP'])->name('password.verify.submit');
+    Route::get('reset-password', [PasswordResetController::class, 'resetForm'])->name('password.reset');
+    Route::post('reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
 });
 
 Route::middleware('auth')->group(function () {
@@ -52,7 +64,10 @@ Route::middleware('auth')->group(function () {
     // --- MY INFO MODULE ROUTES ---
     Route::prefix('my-info')->group(function () {
         Route::get('/', [MyInfoController::class, 'index'])->name('my-info.index');
-        // Add more MyInfo routes here (e.g., PUT or POST for updates)
+        Route::get('/personal', [MyInfoController::class, 'showPersonal'])->name('my-info.personal');
+        Route::post('/personal', [MyInfoController::class, 'updatePersonal'])->name('my-info.personal.update');
+        Route::get('/contact', [MyInfoController::class, 'showContact'])->name('my-info.contact');
+        Route::post('/contact', [MyInfoController::class, 'updateContact'])->name('my-info.contact.update');
     });
     // ---------------------------
 });

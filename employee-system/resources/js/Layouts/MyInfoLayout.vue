@@ -4,6 +4,10 @@ import { Link, usePage } from '@inertiajs/vue3';
 
 const employee = usePage().props.employee;
 
+// Split name for display
+const nameParts = (employee.name || '').split(' ');
+const displayName = employee.name || 'User';
+
 const menuItems = [
     { name: 'Personal Details', href: '/my-info/personal' },
     { name: 'Contact Details', href: '/my-info/contact' },
@@ -18,7 +22,7 @@ const menuItems = [
                 <div class="bg-white rounded-card shadow-card overflow-hidden">
                     <div class="p-8 flex flex-col items-center text-center">
                         <h2 class="text-lg font-bold text-brand-dark mb-6">
-                            {{ employee.first_name }} {{ employee.last_name }}
+                            {{ displayName }}
                         </h2>
                         <div class="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center text-gray-400 text-6xl overflow-hidden border-4 border-white shadow-lg">
                             <i class="fas fa-user"></i>

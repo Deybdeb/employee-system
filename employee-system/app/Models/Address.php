@@ -17,7 +17,9 @@ class Address extends Model
         'city',
         'state_province',
         'postal_code',
+        'zip_postal_code',
         'country_id',
+        'country',
     ];
 
     public function employee()

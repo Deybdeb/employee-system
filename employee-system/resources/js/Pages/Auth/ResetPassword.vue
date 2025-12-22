@@ -3,15 +3,18 @@ import { useForm } from "@inertiajs/vue3";
 import TextInput from "@/Components/TextInput.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 
+const props = defineProps({
+    email: String,
+});
+
 const form = useForm({
-    work_email: "",
+    email: props.email,
     password: "",
+    password_confirmation: "",
 });
 
 const submit = () => {
-    form.post("/login", {
-        onFinish: () => form.reset("password"),
-    });
+    form.post("/reset-password");
 };
 </script>
 
@@ -43,9 +46,13 @@ const submit = () => {
                 </div>
             </div>
 
-            <h1 class="text-3xl font-normal text-brand-dark mb-8 tracking-wide">
-                Login
+            <h1 class="text-3xl font-normal text-brand-dark mb-3 tracking-wide">
+                Reset Password
             </h1>
+            
+            <p class="text-gray-600 text-sm mb-8 text-center">
+                Enter your new password below.
+            </p>
 
             <form @submit.prevent="submit" class="w-full">
                 <div
@@ -58,51 +65,53 @@ const submit = () => {
                 <div
                     v-if="
                         Object.keys(form.errors).length > 0 &&
-                        !form.errors.work_email &&
+                        !form.errors.email &&
                         !form.errors.password
                     "
                     class="bg-red-50 text-red-600 p-3 rounded-md text-sm text-center mb-5 border border-red-100"
                 >
-                    Something went wrong. Please check your credentials.
+                    Something went wrong. Please try again.
                 </div>
 
                 <TextInput
-                    v-model="form.work_email"
-                    icon="far fa-user"
-                    placeholder="Username"
-                    :error="form.errors.work_email"
+                    v-model="form.email"
+                    icon="far fa-envelope"
+                    placeholder="your.email@company.com"
+                    :error="form.errors.email"
+                    readonly
                 >
-                    <template #label>Work Email / Username</template>
+                    <template #label>Email Address</template>
                 </TextInput>
 
                 <TextInput
                     v-model="form.password"
                     type="password"
                     icon="fas fa-key"
-                    placeholder="Password"
+                    placeholder="Enter new password"
                     :error="form.errors.password"
                 >
-                    <template #label>Password</template>
+                    <template #label>New Password</template>
+                </TextInput>
+
+                <TextInput
+                    v-model="form.password_confirmation"
+                    type="password"
+                    icon="fas fa-key"
+                    placeholder="Confirm new password"
+                >
+                    <template #label>Confirm Password</template>
                 </TextInput>
 
                 <PrimaryButton :processing="form.processing" class="mt-2 mb-6">
-                    Login
+                    Reset Password
                 </PrimaryButton>
 
-                <a
-                    :href="route('password.request')"
-                    class="block text-center text-brand-dark text-[13px] hover:underline mb-4"
-                >
-                    Forgot your password?
-                </a>
-
                 <div class="text-center">
-                    <span class="text-gray-600 text-sm">Don't have an account? </span>
                     <a
-                        :href="route('register')"
+                        :href="route('login')"
                         class="text-indigo-600 hover:text-indigo-500 font-medium text-sm"
                     >
-                        Register here
+                        ← Back to Login
                     </a>
                 </div>
             </form>

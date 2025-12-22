@@ -11,6 +11,14 @@ const route = (name, params = {}) => {
         'leave-requests.store': '/leave-requests',
         'leave-requests.admin': '/leave-requests/admin',
         'logout': '/logout',
+        'login': '/login',
+        'register': '/register',
+        'password.request': '/forgot-password',
+        'password.email': '/forgot-password',
+        'password.verify': '/verify-otp',
+        'password.verify.submit': '/verify-otp',
+        'password.reset': '/reset-password',
+        'password.update': '/reset-password',
     };
     
     // Handle routes with parameters
