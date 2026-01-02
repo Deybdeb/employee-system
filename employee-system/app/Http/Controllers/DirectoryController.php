@@ -19,7 +19,7 @@ class DirectoryController extends Controller
                 'work_email',
                 'personal_email',
                 'mobile_phone',
-                'work_phone'
+                'work_phone',
             ])
             ->with('addresses:id,employee_id,city,state_province,country');
 
@@ -54,7 +54,7 @@ class DirectoryController extends Controller
             ->get()
             ->map(function ($employee) {
                 $address = $employee->addresses->first();
-                
+
                 return [
                     'id' => $employee->id,
                     'name' => trim("{$employee->first_name} {$employee->middle_name} {$employee->last_name}"),
@@ -64,14 +64,14 @@ class DirectoryController extends Controller
                     'department' => 'General', // Placeholder - update when department field is added
                     'email' => $employee->work_email ?? $employee->personal_email,
                     'phone' => $employee->work_phone ?? $employee->mobile_phone,
-                    'location' => $address 
+                    'location' => $address
                         ? trim(implode(', ', array_filter([
                             $address->city,
                             $address->state_province,
-                            $address->country
+                            $address->country,
                         ])))
                         : 'Not specified',
-                    'initials' => strtoupper(substr($employee->first_name, 0, 1) . substr($employee->last_name, 0, 1)),
+                    'initials' => strtoupper(substr($employee->first_name, 0, 1).substr($employee->last_name, 0, 1)),
                 ];
             });
 
