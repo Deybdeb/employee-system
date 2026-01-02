@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
-use App\Models\User;
 
 class PasswordResetController extends Controller
 {
@@ -30,7 +30,7 @@ class PasswordResetController extends Controller
         // Check if user exists
         $user = User::where('email', $request->email)->first();
 
-        if (!$user) {
+        if (! $user) {
             return back()->withErrors([
                 'email' => 'We could not find a user with that email address.',
             ]);
@@ -40,7 +40,7 @@ class PasswordResetController extends Controller
         $otp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
 
         // Store OTP in remember_token with timestamp
-        $user->remember_token = $otp . '|' . now()->timestamp;
+        $user->remember_token = $otp.'|'.now()->timestamp;
         $user->save();
 
         // In production, you would send this OTP via email
@@ -74,7 +74,7 @@ class PasswordResetController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user || !$user->remember_token) {
+        if (! $user || ! $user->remember_token) {
             return back()->withErrors([
                 'otp' => 'Invalid or expired OTP. Please request a new one.',
             ]);
@@ -132,14 +132,14 @@ class PasswordResetController extends Controller
         // Find the user
         $user = User::where('email', $request->email)->first();
 
-        if (!$user) {
+        if (! $user) {
             return back()->withErrors([
                 'email' => 'User not found.',
             ]);
         }
 
         // Check if user has a valid OTP (as a security check)
-        if (!$user->remember_token) {
+        if (! $user->remember_token) {
             return back()->withErrors([
                 'email' => 'Invalid password reset session. Please start over.',
             ]);

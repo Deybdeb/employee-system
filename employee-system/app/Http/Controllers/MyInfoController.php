@@ -14,16 +14,17 @@ class MyInfoController extends Controller
     {
         $user = Auth::user();
         $user->refresh();
-        
+
         // Get employee record based on email
         $employee = \App\Models\Employee::where('personal_email', $user->email)->first();
-        
+
         if ($employee) {
             // Load addresses relationship
             $employee->load('addresses');
+
             return $employee->toArray();
         }
-        
+
         // If no employee record exists, return user data with empty employee fields
         return array_merge($user->toArray(), [
             'first_name' => explode(' ', $user->name)[0] ?? '',
@@ -31,10 +32,10 @@ class MyInfoController extends Controller
             'last_name' => count(explode(' ', $user->name)) > 1 ? explode(' ', $user->name)[1] : '',
             'personal_email' => $user->email,
             'work_email' => $user->email,
-            'addresses' => []
+            'addresses' => [],
         ]);
     }
-    
+
     /**
      * Display the My Info page (redirects to personal details)
      */
@@ -77,15 +78,15 @@ class MyInfoController extends Controller
         ]);
 
         // Update User name
-        $name = trim($validated['first_name'] . ' ' . 
-                    ($validated['middle_name'] ?? '') . ' ' . 
+        $name = trim($validated['first_name'].' '.
+                    ($validated['middle_name'] ?? '').' '.
                     $validated['last_name']);
-        
+
         $user->update(['name' => $name]);
 
         // Update or create Employee record
         $employee = \App\Models\Employee::where('personal_email', $user->email)->first();
-        
+
         if ($employee) {
             $employee->update($validated);
         } else {
@@ -136,7 +137,7 @@ class MyInfoController extends Controller
 
             // Update or create Address record
             $address = $employee->addresses()->first();
-            
+
             if ($address) {
                 $address->update([
                     'street_1' => $validated['street_1'],
