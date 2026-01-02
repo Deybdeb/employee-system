@@ -6,6 +6,7 @@ const route = (name, params = {}) => {
     const routes = {
         'dashboard': '/dashboard',
         'my-info.index': '/my-info',
+        'directory.index': '/directory',
         'leave-requests.index': '/leave-requests',
         'leave-requests.create': '/leave-requests/create',
         'leave-requests.store': '/leave-requests',

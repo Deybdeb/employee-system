@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\MyInfoController;
 use App\Http\Controllers\TestingController; // Your new controller
@@ -44,6 +45,9 @@ Route::middleware('auth')->group(function () {
 
     // --- DASHBOARD AND CORE ROUTES ---
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // --- DIRECTORY MODULE ROUTES ---
+    Route::get('/directory', [DirectoryController::class, 'index'])->name('directory.index');
 
     // --- LEAVE MODULE ROUTES ---
     Route::prefix('leave-requests')->group(function () {

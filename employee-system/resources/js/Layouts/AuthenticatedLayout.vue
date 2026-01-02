@@ -1,8 +1,13 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 const page = usePage();
+const isSidebarCollapsed = ref(false);
+
+const toggleSidebar = () => {
+    isSidebarCollapsed.value = !isSidebarCollapsed.value;
+};
 
 // Access the route helper from Ziggy via the global window or page props
 // If not available globally, we can construct URLs manually
@@ -14,6 +19,7 @@ const route = (name, params = {}) => {
     // Fallback: return a simple URI (won't work perfectly but prevents errors)
     const routes = {
         'dashboard': '/dashboard',
+        'directory.index': '/directory',
         'my-info.index': '/my-info',
         'leave-requests.index': '/leave-requests',
         'leave-requests.create': '/leave-requests/create',
@@ -35,7 +41,8 @@ const route = (name, params = {}) => {
 const navItems = computed(() => {
     const items = [
         { name: 'Dashboard', icon: 'fas fa-home', href: route('dashboard') }, 
-        { name: 'My Info', icon: 'far fa-user-circle', href: route('my-info.index') }, 
+        { name: 'My Info', icon: 'far fa-user-circle', href: route('my-info.index') },
+        { name: 'Directory', icon: 'fas fa-address-book', href: route('directory.index') },
         { name: 'Leave Requests', icon: 'fas fa-calendar-alt', href: route('leave-requests.index') }, 
     ];
     
@@ -57,6 +64,9 @@ const headerText = computed(() => {
     if (page.url.startsWith(route('my-info.index'))) {
         return "PIM (Personnel Information Management) - Centralized database for managing employee records and job-related information.";
     }
+    if (page.url.startsWith(route('directory.index'))) {
+        return "Directory - Company-wide contact list of employees with job titles and departments.";
+    }
     // Also update the check here to use the named route for robustness
     if (page.url.startsWith(route('leave-requests.index'))) {
         return "Leave Management - Track, view, and manage employee time-off requests and history.";
@@ -68,7 +78,10 @@ const headerText = computed(() => {
 <template>
     <div class="min-h-screen bg-brand-light font-sans text-brand-dark">
 
-        <header class="fixed top-0 left-0 right-0 h-[70px] bg-brand-yellow z-10 flex items-center shadow-sm lg:pl-[260px] transition-all duration-300">
+        <header 
+            class="fixed top-0 left-0 right-0 h-[70px] bg-brand-yellow z-10 flex items-center shadow-sm transition-all duration-300"
+            :class="isSidebarCollapsed ? 'lg:pl-[80px]' : 'lg:pl-[260px]'"
+        >
             <div class="w-full flex justify-between items-center px-8">
                 <div class="text-[13px] font-medium hidden md:block text-brand-dark/80 truncate pr-4">
                     {{ headerText }}
@@ -84,18 +97,34 @@ const headerText = computed(() => {
         </header>
 
 
-        <aside class="fixed top-0 bottom-0 left-0 w-[260px] bg-white z-30 hidden lg:flex flex-col py-8 rounded-r-[50px] shadow-[0_12px_40px_rgba(0,0,0,0.12)] overflow-hidden">
+        <aside 
+            class="fixed top-0 bottom-0 left-0 bg-white z-30 hidden lg:flex flex-col py-8 rounded-r-[50px] shadow-[0_12px_40px_rgba(0,0,0,0.12)] overflow-visible transition-all duration-300"
+            :class="isSidebarCollapsed ? 'w-[80px]' : 'w-[260px]'"
+        >
+            <!-- Toggle Button -->
+            <button 
+                @click="toggleSidebar"
+                class="absolute -right-4 top-24 w-8 h-8 bg-brand-yellow rounded-full shadow-md flex items-center justify-center hover:bg-brand-yellow/90 transition-colors z-40"
+            >
+                <i class="fas text-white text-sm transition-transform duration-300" 
+                   :class="isSidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
+            </button>
 
             <div class="mb-5 px-6 py-4">
-                <a href="https://purplebug.net/" target="_blank" rel="noopener noreferrer" class="block">
+                <a href="https://purplebug.net/" target="_blank" rel="noopener noreferrer" class="block" v-if="!isSidebarCollapsed">
                     <img src="https://purplebug.beeconnectedsolutions.com/web/images/Logo_BeeConnected_20250725.png?v=1757391258012" 
                          alt="BeeConnected Logo" 
                          class="w-full h-auto max-w-[200px] mx-auto hover:opacity-80 transition-opacity cursor-pointer">
                 </a>
+                <a href="https://purplebug.net/" target="_blank" rel="noopener noreferrer" class="block" v-else>
+                    <img src="https://purplebug.beeconnectedsolutions.com/web/images/Icon1_BeeConnected_20250725.png?v=1757391258012"
+                         alt="BeeConnected Icon"
+                         class="w-16 h-16 object-contain mx-auto hover:opacity-80 transition-opacity cursor-pointer">
+                </a>
             </div>
 
 
-            <div class="relative mb-6 px-6">
+            <div v-if="!isSidebarCollapsed" class="relative mb-6 px-6">
                 <i class="fas fa-search absolute left-10 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
                 <input type="text" placeholder="Search" class="w-full bg-gray-50 rounded-full py-3 pl-10 pr-4 text-xs focus:outline-none focus:ring-1 focus:ring-brand-yellow transition-shadow">
             </div>
@@ -106,15 +135,27 @@ const headerText = computed(() => {
                     <li v-for="item in navItems" :key="item.name">
                         <Link
                             :href="item.href"
-                            class="flex items-center py-4 pl-8 pr-6 text-sm font-medium transition-all duration-200 w-full rounded-r-full mr-12 border-l-4 border-transparent"
-                            :class="$page.url.startsWith(item.href) // Checks if URL starts with item.href (e.g., /leave-requests or /leave-requests/create)
-                                ? 'bg-brand-yellow text-gray-900 border-l-brand-dark'
-                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
+                            class="flex items-center py-4 text-sm font-medium transition-all duration-200 w-full rounded-r-full border-l-4 border-transparent group relative"
+                            :class="[
+                                $page.url.startsWith(item.href) 
+                                    ? 'bg-brand-yellow text-gray-900 border-l-brand-dark'
+                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+                                isSidebarCollapsed ? 'justify-center px-0 mr-0' : 'pl-8 pr-6 mr-12'
+                            ]"
                         >
-                            <div class="w-6 text-center mr-3">
+                            <div :class="isSidebarCollapsed ? 'w-auto' : 'w-6 text-center mr-3'">
                                 <i :class="[item.icon, 'text-base', $page.url.startsWith(item.href) ? 'text-gray-900' : 'text-gray-400']"></i>
                             </div>
-                            {{ item.name }}
+                            <span v-if="!isSidebarCollapsed">{{ item.name }}</span>
+                            
+                            <!-- Tooltip for collapsed state -->
+                            <div 
+                                v-if="isSidebarCollapsed"
+                                class="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none"
+                            >
+                                {{ item.name }}
+                                <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
+                            </div>
                         </Link>
                     </li>
                     
@@ -122,12 +163,22 @@ const headerText = computed(() => {
                         <Link
                             :href="route('logout')"  method="post"
                             as="button"
-                            class="flex w-full items-center py-4 pl-8 pr-6 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors rounded-r-full mr-12 border-l-4 border-transparent"
+                            class="flex w-full items-center py-4 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors rounded-r-full border-l-4 border-transparent group relative"
+                            :class="isSidebarCollapsed ? 'justify-center px-0 mr-0' : 'pl-8 pr-6 mr-12'"
                         >
-                            <div class="w-6 text-center mr-3">
+                            <div :class="isSidebarCollapsed ? 'w-auto' : 'w-6 text-center mr-3'">
                                 <i class="fas fa-sign-out-alt text-base text-gray-400"></i>
                             </div>
-                            Logout
+                            <span v-if="!isSidebarCollapsed">Logout</span>
+                            
+                            <!-- Tooltip for collapsed state -->
+                            <div 
+                                v-if="isSidebarCollapsed"
+                                class="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none"
+                            >
+                                Logout
+                                <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
+                            </div>
                         </Link>
                     </li>
                 </ul>
@@ -135,7 +186,10 @@ const headerText = computed(() => {
         </aside>
 
 
-        <main class="w-full lg:pl-[calc(260px+2rem)] pt-[100px] pb-8 pr-8 min-w-0 transition-all duration-300">
+        <main 
+            class="w-full pt-[100px] pb-8 pr-8 min-w-0 transition-all duration-300"
+            :class="isSidebarCollapsed ? 'lg:pl-[calc(80px+2rem)]' : 'lg:pl-[calc(260px+2rem)]'"
+        >
             <div class="max-w-6xl w-full mx-auto">
                 <slot />
             </div>
