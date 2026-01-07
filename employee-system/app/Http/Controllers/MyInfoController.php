@@ -183,7 +183,7 @@ class MyInfoController extends Controller
         ]);
 
         // Verify current password
-        if (!Hash::check($validated['current_password'], $user->password)) {
+        if (! Hash::check($validated['current_password'], $user->password)) {
             return back()->withErrors([
                 'current_password' => 'The current password is incorrect.',
             ]);
