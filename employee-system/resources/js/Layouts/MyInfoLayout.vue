@@ -11,6 +11,7 @@ const displayName = employee.name || 'User';
 const menuItems = [
     { name: 'Personal Details', href: '/my-info/personal' },
     { name: 'Contact Details', href: '/my-info/contact' },
+    { name: 'Change Password', href: '/my-info/password' },
 ];
 </script>
 

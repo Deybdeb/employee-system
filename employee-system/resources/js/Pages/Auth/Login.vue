@@ -23,24 +23,11 @@ const submit = () => {
             <div
                 class="bg-white px-10 py-4 rounded-xl shadow-lg border border-gray-50 flex flex-col items-center mb-8 w-full"
             >
-                <div class="flex items-center gap-2.5 mb-1">
-                    <div
-                        class="bg-brand-yellow w-8 h-8 rounded-lg flex items-center justify-center text-brand-dark text-lg"
-                    >
-                        <i
-                            class="fas fa-shield-alt transform rotate-180 text-sm"
-                        ></i>
-                    </div>
-                    <div
-                        class="text-2xl font-semibold text-brand-dark tracking-tight"
-                    >
-                        <span class="text-brand-yellow">Bee</span>Connected
-                    </div>
-                </div>
-                <div class="text-[10px] text-gray-400 ml-auto mt-[-2px]">
-                    Powered by
-                    <span class="text-purple-700 font-semibold">PurpleBug</span>
-                </div>
+                <img 
+                    src="https://purplebug.beeconnectedsolutions.com/web/images/Logo_BeeConnected_20250725.png?v=1757391258012" 
+                    alt="BeeConnected Logo" 
+                    class="h-16 w-auto"
+                />
             </div>
 
             <h1 class="text-3xl font-normal text-brand-dark mb-8 tracking-wide">

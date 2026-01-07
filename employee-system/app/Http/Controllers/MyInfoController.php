@@ -6,6 +6,8 @@ use App\Models\Address;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 
 class MyInfoController extends Controller
@@ -57,6 +59,13 @@ class MyInfoController extends Controller
 
         return Inertia::render('MyInfo/Contact', [
             'employee' => $employee,
+        ]);
+    }
+
+    public function showPassword()
+    {
+        return Inertia::render('MyInfo/Password', [
+            'employee' => $this->getEmployeeData(),
         ]);
     }
 
@@ -162,5 +171,29 @@ class MyInfoController extends Controller
         }
 
         return redirect()->back()->with('success', 'Contact information updated successfully');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'current_password' => 'required',
+            'password' => ['required', 'confirmed', Password::min(8)],
+        ]);
+
+        // Verify current password
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return back()->withErrors([
+                'current_password' => 'The current password is incorrect.',
+            ]);
+        }
+
+        // Update password
+        $user->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return redirect()->back()->with('success', 'Password updated successfully');
     }
 }

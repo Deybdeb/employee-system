@@ -4,9 +4,18 @@ import { computed, ref } from 'vue';
 
 const page = usePage();
 const isSidebarCollapsed = ref(false);
+const isUserDropdownOpen = ref(false);
 
 const toggleSidebar = () => {
     isSidebarCollapsed.value = !isSidebarCollapsed.value;
+};
+
+const toggleUserDropdown = () => {
+    isUserDropdownOpen.value = !isUserDropdownOpen.value;
+};
+
+const closeUserDropdown = () => {
+    isUserDropdownOpen.value = false;
 };
 
 // Access the route helper from Ziggy via the global window or page props
@@ -21,6 +30,10 @@ const route = (name, params = {}) => {
         'dashboard': '/dashboard',
         'directory.index': '/directory',
         'my-info.index': '/my-info',
+        'my-info.personal': '/my-info/personal',
+        'my-info.contact': '/my-info/contact',
+        'my-info.password': '/my-info/password',
+        'my-info.password.update': '/my-info/password',
         'leave-requests.index': '/leave-requests',
         'leave-requests.create': '/leave-requests/create',
         'leave-requests.store': '/leave-requests',
@@ -87,11 +100,32 @@ const headerText = computed(() => {
                     {{ headerText }}
                 </div>
 
-                <div class="flex items-center gap-3 text-[13px] font-semibold ml-auto text-brand-dark shrink-0">
-                    <div class="w-9 h-9 bg-white/30 backdrop-blur-sm rounded-full border border-white/50 flex items-center justify-center overflow-hidden shadow-sm">
-                        <i class="fas fa-user text-white text-lg mt-1 opacity-90"></i>
+                <div class="flex items-center gap-3 text-[13px] font-semibold ml-auto text-brand-dark shrink-0 relative">
+                    <button 
+                        @click="toggleUserDropdown"
+                        class="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+                    >
+                        <div class="w-9 h-9 bg-white/30 backdrop-blur-sm rounded-full border border-white/50 flex items-center justify-center overflow-hidden shadow-sm">
+                            <i class="fas fa-user text-white text-lg mt-1 opacity-90"></i>
+                        </div>
+                        <span>{{ page.props.auth?.user?.name || 'User' }} <i class="fas fa-caret-down ml-1 opacity-70"></i></span>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div 
+                        v-if="isUserDropdownOpen"
+                        @click.away="closeUserDropdown"
+                        class="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
+                    >
+                        <Link
+                            :href="route('my-info.password')"
+                            @click="closeUserDropdown"
+                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        >
+                            <i class="fas fa-key mr-2 text-gray-400"></i>
+                            Change Password
+                        </Link>
                     </div>
-                    <span>{{ page.props.auth?.user?.name || 'User' }} <i class="fas fa-caret-down ml-1 opacity-70"></i></span>
                 </div>
             </div>
         </header>

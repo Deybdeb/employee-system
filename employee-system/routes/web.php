@@ -72,6 +72,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/personal', [MyInfoController::class, 'updatePersonal'])->name('my-info.personal.update');
         Route::get('/contact', [MyInfoController::class, 'showContact'])->name('my-info.contact');
         Route::post('/contact', [MyInfoController::class, 'updateContact'])->name('my-info.contact.update');
+        Route::get('/password', [MyInfoController::class, 'showPassword'])->name('my-info.password');
+        Route::post('/password', [MyInfoController::class, 'updatePassword'])->name('my-info.password.update');
     });
     // ---------------------------
 });
