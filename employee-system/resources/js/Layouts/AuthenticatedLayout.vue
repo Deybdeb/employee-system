@@ -5,6 +5,7 @@ import { computed, ref } from 'vue';
 const page = usePage();
 const isSidebarCollapsed = ref(false);
 const isUserDropdownOpen = ref(false);
+const expandedMenuItems = ref({});
 
 const toggleSidebar = () => {
     isSidebarCollapsed.value = !isSidebarCollapsed.value;
@@ -16,6 +17,10 @@ const toggleUserDropdown = () => {
 
 const closeUserDropdown = () => {
     isUserDropdownOpen.value = false;
+};
+
+const toggleMenuItem = (itemName) => {
+    expandedMenuItems.value[itemName] = !expandedMenuItems.value[itemName];
 };
 
 // Access the route helper from Ziggy via the global window or page props
@@ -41,6 +46,12 @@ const route = (name, params = {}) => {
         'leave-requests.approve': (id) => `/leave-requests/${id}/approve`,
         'leave-requests.decline': (id) => `/leave-requests/${id}/decline`,
         'leave-requests.cancel': (id) => `/leave-requests/${id}/cancel`,
+        'overtime-requests.index': '/overtime-requests',
+        'overtime-requests.store': '/overtime-requests',
+        'overtime-requests.admin': '/overtime-requests/admin',
+        'overtime-requests.approve': (id) => `/overtime-requests/${id}/approve`,
+        'overtime-requests.decline': (id) => `/overtime-requests/${id}/decline`,
+        'overtime-requests.cancel': (id) => `/overtime-requests/${id}/cancel`,
         'logout': '/logout',
     };
     
@@ -53,23 +64,56 @@ const route = (name, params = {}) => {
 // --- THE FIX IS HERE: Using route() helper for all internal links ---
 const navItems = computed(() => {
     const items = [
-        { name: 'Dashboard', icon: 'fas fa-home', href: route('dashboard') }, 
-        { name: 'My Info', icon: 'far fa-user-circle', href: route('my-info.index') },
-        { name: 'Directory', icon: 'fas fa-address-book', href: route('directory.index') },
-        { name: 'Leave Requests', icon: 'fas fa-calendar-alt', href: route('leave-requests.index') }, 
+        { name: 'Dashboard', icon: 'fas fa-home', href: route('dashboard'), exact: true }, 
+        { name: 'My Info', icon: 'far fa-user-circle', href: route('my-info.index'), exact: false },
+        { name: 'Directory', icon: 'fas fa-address-book', href: route('directory.index'), exact: true },
+        { 
+            name: 'Leave Requests', 
+            icon: 'fas fa-calendar-alt', 
+            href: route('leave-requests.index'),
+            exact: false,
+            subItems: page.props.auth?.user?.is_admin ? [
+                { 
+                    name: 'Leave Management', 
+                    icon: 'fas fa-user-shield', 
+                    href: route('leave-requests.admin') 
+                }
+            ] : []
+        },
+        { 
+            name: 'Overtime', 
+            icon: 'fas fa-clock', 
+            href: route('overtime-requests.index'),
+            exact: false,
+            subItems: page.props.auth?.user?.is_admin ? [
+                { 
+                    name: 'Overtime Management', 
+                    icon: 'fas fa-user-clock', 
+                    href: route('overtime-requests.admin') 
+                }
+            ] : []
+        }, 
     ];
-    
-    // Add HR Admin menu item for admin users
-    if (page.props.auth?.user?.is_admin) {
-        items.push({ 
-            name: 'Leave Management (HR)', 
-            icon: 'fas fa-user-shield', 
-            href: route('leave-requests.admin') 
-        });
-    }
     
     return items;
 });
+
+// Helper function to check if nav item is active
+const isNavItemActive = (item) => {
+    if (item.exact) {
+        return page.url === item.href;
+    }
+    // For non-exact matches, check if current URL starts with the href
+    // but exclude sub-item specific pages for parent items
+    if (item.subItems && item.subItems.length > 0) {
+        // Check if we're on a sub-item page
+        const isOnSubItemPage = item.subItems.some(subItem => page.url === subItem.href);
+        if (isOnSubItemPage) {
+            return false; // Don't highlight parent if we're on a sub-item page
+        }
+    }
+    return page.url.startsWith(item.href);
+};
 // ------------------------------------------------------------------
 
 
@@ -80,9 +124,11 @@ const headerText = computed(() => {
     if (page.url.startsWith(route('directory.index'))) {
         return "Directory - Company-wide contact list of employees with job titles and departments.";
     }
-    // Also update the check here to use the named route for robustness
     if (page.url.startsWith(route('leave-requests.index'))) {
         return "Leave Management - Track, view, and manage employee time-off requests and history.";
+    }
+    if (page.url.startsWith(route('overtime-requests.index'))) {
+        return "Overtime Management - Submit, track, and manage overtime work requests and approvals.";
     }
     return "Dashboard - Overview of key HR information, announcements, and quick links to main modules.";
 });
@@ -167,30 +213,74 @@ const headerText = computed(() => {
             <nav class="flex-1 overflow-y-auto custom-scrollbar">
                 <ul class="space-y-1">
                     <li v-for="item in navItems" :key="item.name">
-                        <Link
-                            :href="item.href"
-                            class="flex items-center py-4 text-sm font-medium transition-all duration-200 w-full rounded-r-full border-l-4 border-transparent group relative"
-                            :class="[
-                                $page.url.startsWith(item.href) 
-                                    ? 'bg-brand-yellow text-gray-900 border-l-brand-dark'
-                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-                                isSidebarCollapsed ? 'justify-center px-0 mr-0' : 'pl-8 pr-6 mr-12'
-                            ]"
-                        >
-                            <div :class="isSidebarCollapsed ? 'w-auto' : 'w-6 text-center mr-3'">
-                                <i :class="[item.icon, 'text-base', $page.url.startsWith(item.href) ? 'text-gray-900' : 'text-gray-400']"></i>
-                            </div>
-                            <span v-if="!isSidebarCollapsed">{{ item.name }}</span>
-                            
-                            <!-- Tooltip for collapsed state -->
-                            <div 
-                                v-if="isSidebarCollapsed"
-                                class="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none"
+                        <!-- Main navigation item -->
+                        <div class="flex items-center relative">
+                            <Link
+                                :href="item.href"
+                                class="flex items-center py-4 text-sm font-medium transition-all duration-200 w-full border-l-4 border-transparent group relative"
+                                :class="[
+                                    isNavItemActive(item)
+                                        ? 'bg-brand-yellow text-gray-900 border-l-brand-dark rounded-r-3xl mr-3'
+                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-r-full mr-12',
+                                    isSidebarCollapsed ? 'justify-center px-0' : (item.subItems && item.subItems.length > 0 ? 'pl-8 pr-12' : 'pl-8 pr-6')
+                                ]"
                             >
-                                {{ item.name }}
-                                <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
-                            </div>
-                        </Link>
+                                <div :class="isSidebarCollapsed ? 'w-auto' : 'w-6 text-center mr-3'">
+                                    <i :class="[item.icon, 'text-base', isNavItemActive(item) ? 'text-gray-900' : 'text-gray-400']"></i>
+                                </div>
+                                <span v-if="!isSidebarCollapsed" class="flex-1">{{ item.name }}</span>
+                                
+                                <!-- Tooltip for collapsed state -->
+                                <div 
+                                    v-if="isSidebarCollapsed"
+                                    class="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none"
+                                >
+                                    {{ item.name }}
+                                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
+                                </div>
+                            </Link>
+                            
+                            <!-- Dropdown toggle button -->
+                            <button
+                                v-if="item.subItems && item.subItems.length > 0 && !isSidebarCollapsed"
+                                @click.prevent="toggleMenuItem(item.name)"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors z-10"
+                            >
+                                <i 
+                                    class="fas fa-chevron-down text-xs transition-transform duration-200"
+                                    :class="{ 'rotate-180': expandedMenuItems[item.name] }"
+                                ></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Sub-items (if any) with slide animation -->
+                        <transition
+                            enter-active-class="transition-all duration-200 ease-out"
+                            enter-from-class="opacity-0 -translate-y-2 max-h-0"
+                            enter-to-class="opacity-100 translate-y-0 max-h-96"
+                            leave-active-class="transition-all duration-200 ease-in"
+                            leave-from-class="opacity-100 translate-y-0 max-h-96"
+                            leave-to-class="opacity-0 -translate-y-2 max-h-0"
+                        >
+                            <ul v-if="item.subItems && item.subItems.length > 0 && !isSidebarCollapsed && expandedMenuItems[item.name]" class="overflow-hidden">
+                                <li v-for="subItem in item.subItems" :key="subItem.name">
+                                    <Link
+                                        :href="subItem.href"
+                                        class="flex items-center py-3 text-sm font-medium transition-all duration-200 w-full border-l-4 border-transparent group relative"
+                                        :class="[
+                                            $page.url === subItem.href 
+                                                ? 'bg-brand-yellow text-gray-900 border-l-brand-dark rounded-r-3xl pl-16 pr-6 mr-3'
+                                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-r-full pl-16 pr-6 mr-12'
+                                        ]"
+                                    >
+                                        <div class="w-5 text-center mr-3">
+                                            <i :class="[subItem.icon, 'text-sm', $page.url === subItem.href ? 'text-gray-900' : 'text-gray-400']"></i>
+                                        </div>
+                                        <span>{{ subItem.name }}</span>
+                                    </Link>
+                                </li>
+                            </ul>
+                        </transition>
                     </li>
                     
                     <li>
@@ -198,7 +288,7 @@ const headerText = computed(() => {
                             :href="route('logout')"  method="post"
                             as="button"
                             class="flex w-full items-center py-4 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors rounded-r-full border-l-4 border-transparent group relative"
-                            :class="isSidebarCollapsed ? 'justify-center px-0 mr-0' : 'pl-8 pr-6 mr-12'"
+                            :class="isSidebarCollapsed ? 'justify-center px-0' : 'pl-8 pr-6 mr-12'"
                         >
                             <div :class="isSidebarCollapsed ? 'w-auto' : 'w-6 text-center mr-3'">
                                 <i class="fas fa-sign-out-alt text-base text-gray-400"></i>

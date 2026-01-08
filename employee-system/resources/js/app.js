@@ -6,11 +6,17 @@ const route = (name, params = {}) => {
     const routes = {
         'dashboard': '/dashboard',
         'my-info.index': '/my-info',
+        'my-info.personal': '/my-info/personal',
+        'my-info.contact': '/my-info/contact',
+        'my-info.password': '/my-info/password',
         'directory.index': '/directory',
         'leave-requests.index': '/leave-requests',
         'leave-requests.create': '/leave-requests/create',
         'leave-requests.store': '/leave-requests',
         'leave-requests.admin': '/leave-requests/admin',
+        'overtime-requests.index': '/overtime-requests',
+        'overtime-requests.store': '/overtime-requests',
+        'overtime-requests.admin': '/overtime-requests/admin',
         'logout': '/logout',
         'login': '/login',
         'register': '/register',
@@ -28,6 +34,9 @@ const route = (name, params = {}) => {
         if (name === 'leave-requests.decline') return `/leave-requests/${params}/decline`;
         if (name === 'leave-requests.cancel') return `/leave-requests/${params}/cancel`;
         if (name === 'leave-requests.destroy') return `/leave-requests/${params}`;
+        if (name === 'overtime-requests.approve') return `/overtime-requests/${params}/approve`;
+        if (name === 'overtime-requests.decline') return `/overtime-requests/${params}/decline`;
+        if (name === 'overtime-requests.cancel') return `/overtime-requests/${params}/cancel`;
     }
     
     return routes[name] || `/${name.replace(/\./g, '/')}`;

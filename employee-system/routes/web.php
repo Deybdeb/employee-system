@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\LeaveRequestController;
+use App\Http\Controllers\OvertimeRequestController;
 use App\Http\Controllers\MyInfoController;
 use App\Http\Controllers\TestingController; // Your new controller
 use Illuminate\Support\Facades\App;
@@ -62,6 +63,20 @@ Route::middleware('auth')->group(function () {
         Route::post('/{id}/approve', [LeaveRequestController::class, 'approve'])->name('leave-requests.approve');
         Route::post('/{id}/decline', [LeaveRequestController::class, 'decline'])->name('leave-requests.decline');
         Route::delete('/{id}', [LeaveRequestController::class, 'destroy'])->name('leave-requests.destroy');
+    });
+    // ---------------------------
+
+    // --- OVERTIME MODULE ROUTES ---
+    Route::prefix('overtime-requests')->group(function () {
+        // Employee routes
+        Route::get('/', [OvertimeRequestController::class, 'index'])->name('overtime-requests.index');
+        Route::post('/', [OvertimeRequestController::class, 'store'])->name('overtime-requests.store');
+        Route::post('/{id}/cancel', [OvertimeRequestController::class, 'cancel'])->name('overtime-requests.cancel');
+
+        // HR/Admin routes
+        Route::get('/admin', [OvertimeRequestController::class, 'admin'])->name('overtime-requests.admin');
+        Route::post('/{id}/approve', [OvertimeRequestController::class, 'approve'])->name('overtime-requests.approve');
+        Route::post('/{id}/decline', [OvertimeRequestController::class, 'decline'])->name('overtime-requests.decline');
     });
     // ---------------------------
 
