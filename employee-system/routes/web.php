@@ -6,8 +6,8 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\LeaveRequestController;
-use App\Http\Controllers\OvertimeRequestController;
 use App\Http\Controllers\MyInfoController;
+use App\Http\Controllers\OvertimeRequestController;
 use App\Http\Controllers\TestingController; // Your new controller
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
