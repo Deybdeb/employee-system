@@ -6,6 +6,7 @@ const page = usePage();
 const isSidebarCollapsed = ref(false);
 const isUserDropdownOpen = ref(false);
 const expandedMenuItems = ref({});
+const searchTerm = ref('');
 
 const toggleSidebar = () => {
     isSidebarCollapsed.value = !isSidebarCollapsed.value;
@@ -96,6 +97,26 @@ const navItems = computed(() => {
     ];
     
     return items;
+});
+
+const filteredNavItems = computed(() => {
+    const term = searchTerm.value.trim().toLowerCase();
+    if (!term) return navItems.value;
+
+    return navItems.value
+        .map(item => {
+            const matchesParent = item.name.toLowerCase().includes(term);
+            if (!item.subItems || item.subItems.length === 0) {
+                return matchesParent ? item : null;
+            }
+
+            const matchingSubs = item.subItems.filter(sub => sub.name.toLowerCase().includes(term));
+            if (matchesParent || matchingSubs.length > 0) {
+                return { ...item, subItems: matchingSubs };
+            }
+            return null;
+        })
+        .filter(Boolean);
 });
 
 // Helper function to check if nav item is active
@@ -206,38 +227,46 @@ const headerText = computed(() => {
 
             <div v-if="!isSidebarCollapsed" class="relative mb-6 px-6">
                 <i class="fas fa-search absolute left-10 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                <input type="text" placeholder="Search" class="w-full bg-gray-50 rounded-full py-3 pl-10 pr-4 text-xs focus:outline-none focus:ring-1 focus:ring-brand-yellow transition-shadow">
+                <input
+                    v-model="searchTerm"
+                    type="text"
+                    placeholder="Search"
+                    class="w-full bg-gray-50 rounded-full py-3 pl-10 pr-10 text-xs focus:outline-none focus:ring-1 focus:ring-brand-yellow transition-shadow"
+                >
+                <button
+                    v-if="searchTerm"
+                    @click="searchTerm = ''"
+                    class="absolute right-10 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
+                    aria-label="Clear search"
+                >
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
 
 
             <nav class="flex-1 overflow-y-auto custom-scrollbar">
                 <ul class="space-y-1">
-                    <li v-for="item in navItems" :key="item.name">
+                    <li v-if="filteredNavItems.length === 0" class="px-6 py-3 text-xs text-gray-400">
+                        No modules found
+                    </li>
+                    <li v-for="item in filteredNavItems" :key="item.name">
                         <!-- Main navigation item -->
                         <div class="flex items-center relative">
                             <Link
                                 :href="item.href"
-                                class="flex items-center py-4 text-sm font-medium transition-all duration-200 w-full border-l-4 border-transparent group relative"
+                                class="flex items-center py-4 text-sm font-medium transition-all duration-200 w-full group relative"
                                 :class="[
                                     isNavItemActive(item)
-                                        ? 'bg-brand-yellow text-gray-900 border-l-brand-dark rounded-r-3xl mr-3'
-                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-r-full mr-12',
-                                    isSidebarCollapsed ? 'justify-center px-0' : (item.subItems && item.subItems.length > 0 ? 'pl-8 pr-12' : 'pl-8 pr-6')
+                                        ? 'bg-brand-yellow text-gray-900 border-l-brand-dark rounded-r-3xl mr-3 border-l-4'
+                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-r-full mr-12 border-l-4 border-transparent',
+                                    isSidebarCollapsed ? 'justify-center px-0 !mr-0 !border-l-0' : (item.subItems && item.subItems.length > 0 ? 'pl-8 pr-12' : 'pl-8 pr-6')
                                 ]"
                             >
-                                <div :class="isSidebarCollapsed ? 'w-auto' : 'w-6 text-center mr-3'">
+                                <div v-if="!isSidebarCollapsed" class="w-6 text-center mr-3">
                                     <i :class="[item.icon, 'text-base', isNavItemActive(item) ? 'text-gray-900' : 'text-gray-400']"></i>
                                 </div>
+                                <i v-else :class="[item.icon, 'text-lg', isNavItemActive(item) ? 'text-gray-900' : 'text-gray-400']"></i>
                                 <span v-if="!isSidebarCollapsed" class="flex-1">{{ item.name }}</span>
-                                
-                                <!-- Tooltip for collapsed state -->
-                                <div 
-                                    v-if="isSidebarCollapsed"
-                                    class="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none"
-                                >
-                                    {{ item.name }}
-                                    <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
-                                </div>
                             </Link>
                             
                             <!-- Dropdown toggle button -->
@@ -287,22 +316,14 @@ const headerText = computed(() => {
                         <Link
                             :href="route('logout')"  method="post"
                             as="button"
-                            class="flex w-full items-center py-4 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors rounded-r-full border-l-4 border-transparent group relative"
-                            :class="isSidebarCollapsed ? 'justify-center px-0' : 'pl-8 pr-6 mr-12'"
+                            class="flex w-full items-center py-4 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors group relative"
+                            :class="isSidebarCollapsed ? 'justify-center px-0' : 'pl-8 pr-6 mr-12 rounded-r-full border-l-4 border-transparent'"
                         >
-                            <div :class="isSidebarCollapsed ? 'w-auto' : 'w-6 text-center mr-3'">
+                            <div v-if="!isSidebarCollapsed" class="w-6 text-center mr-3">
                                 <i class="fas fa-sign-out-alt text-base text-gray-400"></i>
                             </div>
+                            <i v-else class="fas fa-sign-out-alt text-lg text-gray-400"></i>
                             <span v-if="!isSidebarCollapsed">Logout</span>
-                            
-                            <!-- Tooltip for collapsed state -->
-                            <div 
-                                v-if="isSidebarCollapsed"
-                                class="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none"
-                            >
-                                Logout
-                                <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
-                            </div>
                         </Link>
                     </li>
                 </ul>
