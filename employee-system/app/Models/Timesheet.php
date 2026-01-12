@@ -51,7 +51,7 @@ class Timesheet extends Model
 
     public function getStatusLabelAttribute(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'draft' => 'Not Submitted',
             'submitted' => 'Pending Approval',
             'approved' => 'Approved',

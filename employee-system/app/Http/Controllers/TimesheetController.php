@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Attendance;
 use App\Models\Employee;
 use App\Models\Timesheet;
 use App\Models\TimesheetEntry;
@@ -20,20 +19,21 @@ class TimesheetController extends Controller
     {
         $user = Auth::user();
         $employee = $user->employee()->first();
-        
-        \Log::info('Timesheet Index - User ID: ' . $user->id . ', Employee: ' . json_encode($employee));
-        
-        if (!$employee) {
-            \Log::error('Employee record not found for user: ' . $user->id);
-            return back()->withErrors(['error' => 'Employee record not found for user ID: ' . $user->id . '. Please contact administrator.']);
+
+        \Log::info('Timesheet Index - User ID: '.$user->id.', Employee: '.json_encode($employee));
+
+        if (! $employee) {
+            \Log::error('Employee record not found for user: '.$user->id);
+
+            return back()->withErrors(['error' => 'Employee record not found for user ID: '.$user->id.'. Please contact administrator.']);
         }
-        
+
         $employeeId = $employee->id;
-        \Log::info('Timesheet Index - Using Employee ID: ' . $employeeId);
+        \Log::info('Timesheet Index - Using Employee ID: '.$employeeId);
         $now = TimeManager::getInstance()->now();
-        
+
         // Get the week from request or use current week
-        $weekStart = $request->get('week_start') 
+        $weekStart = $request->get('week_start')
             ? \Carbon\Carbon::parse($request->get('week_start'))->startOfWeek()
             : $now->copy()->startOfWeek();
         $weekEnd = $weekStart->copy()->endOfWeek();
@@ -82,11 +82,11 @@ class TimesheetController extends Controller
         ]);
 
         $timesheet = Timesheet::findOrFail($request->timesheet_id);
-        
+
         $user = Auth::user();
         $employee = $user->employee()->first();
-        
-        if (!$employee || $timesheet->employee_id !== $employee->id) {
+
+        if (! $employee || $timesheet->employee_id !== $employee->id) {
             abort(403, 'Unauthorized');
         }
 
@@ -118,12 +118,12 @@ class TimesheetController extends Controller
     public function submit(Request $request, $id)
     {
         $timesheet = Timesheet::findOrFail($id);
-        
+
         $user = Auth::user();
         $employee = $user->employee()->first();
 
         // Verify ownership
-        if (!$employee || $timesheet->employee_id !== $employee->id) {
+        if (! $employee || $timesheet->employee_id !== $employee->id) {
             abort(403, 'Unauthorized');
         }
 

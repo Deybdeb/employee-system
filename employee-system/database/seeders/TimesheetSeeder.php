@@ -19,7 +19,7 @@ class TimesheetSeeder extends Seeder
     {
         // Create test user if it doesn't exist
         $user = User::where('email', 'user123@example.com')->first();
-        if (!$user) {
+        if (! $user) {
             $user = User::create([
                 'name' => 'User 123',
                 'email' => 'user123@example.com',
@@ -29,7 +29,7 @@ class TimesheetSeeder extends Seeder
 
         // Create matching employee if it doesn't exist
         $employee = Employee::where('personal_email', 'user123@example.com')->first();
-        if (!$employee) {
+        if (! $employee) {
             $employee = Employee::create([
                 'first_name' => 'User',
                 'last_name' => '123',
@@ -41,7 +41,7 @@ class TimesheetSeeder extends Seeder
 
         // Create sample timesheets for the past 3 weeks
         $startDate = Carbon::now()->startOfWeek();
-        
+
         for ($i = 0; $i < 3; $i++) {
             $weekStart = $startDate->copy()->subWeeks($i);
             $weekEnd = $weekStart->copy()->addDays(6);
@@ -51,7 +51,7 @@ class TimesheetSeeder extends Seeder
                 ->where('week_start_date', $weekStart->toDateString())
                 ->first();
 
-            if (!$timesheet) {
+            if (! $timesheet) {
                 $timesheet = Timesheet::create([
                     'employee_id' => $employee->id,
                     'week_start_date' => $weekStart->toDateString(),
@@ -68,11 +68,11 @@ class TimesheetSeeder extends Seeder
 
                     TimesheetEntry::create([
                         'timesheet_id' => $timesheet->id,
-                        'project' => 'Project ' . chr(65 + ($day % 3)), // Projects A, B, C rotating
+                        'project' => 'Project '.chr(65 + ($day % 3)), // Projects A, B, C rotating
                         'activity' => ['Development', 'Testing', 'Documentation', 'Meetings', 'Review'][$day],
                         'date' => $entryDate->toDateString(),
                         'hours' => 8 + rand(-1, 1), // 7-9 hours per day
-                        'notes' => 'Sample entry for ' . $entryDate->format('l'),
+                        'notes' => 'Sample entry for '.$entryDate->format('l'),
                     ]);
                 }
             }

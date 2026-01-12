@@ -18,16 +18,16 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
         $employee = $user->employee()->first();
-        
-        if (!$employee) {
+
+        if (! $employee) {
             return back()->withErrors(['error' => 'Employee record not found.']);
         }
-        
+
         $employeeId = $employee->id;
         $now = TimeManager::getInstance()->now();
 
         // Get date range from request or default to current month
-        $startDate = $request->get('start_date') 
+        $startDate = $request->get('start_date')
             ? \Carbon\Carbon::parse($request->get('start_date'))
             : $now->copy()->startOfMonth();
         $endDate = $request->get('end_date')
@@ -45,7 +45,7 @@ class AttendanceController extends Controller
                     'clock_in_display' => $attendance->clock_in->format('M d, Y g:i A'),
                     'clock_out' => $attendance->clock_out ? $attendance->clock_out->format('Y-m-d H:i:s') : null,
                     'clock_out_display' => $attendance->clock_out ? $attendance->clock_out->format('M d, Y g:i A') : null,
-                    'duration' => $attendance->clock_out 
+                    'duration' => $attendance->clock_out
                         ? $this->formatDuration($attendance->clock_in, $attendance->clock_out)
                         : 'In Progress',
                     'date' => $attendance->clock_in->format('Y-m-d'),
@@ -90,14 +90,14 @@ class AttendanceController extends Controller
             return [
                 'id' => $attendance->id,
                 'employee_id' => $attendance->employee_id,
-                'employee_name' => $attendance->employee 
-                    ? $attendance->employee->first_name . ' ' . $attendance->employee->last_name
+                'employee_name' => $attendance->employee
+                    ? $attendance->employee->first_name.' '.$attendance->employee->last_name
                     : 'Unknown',
                 'clock_in' => $attendance->clock_in->format('Y-m-d H:i:s'),
                 'clock_in_display' => $attendance->clock_in->format('M d, Y g:i A'),
                 'clock_out' => $attendance->clock_out ? $attendance->clock_out->format('Y-m-d H:i:s') : null,
                 'clock_out_display' => $attendance->clock_out ? $attendance->clock_out->format('M d, Y g:i A') : null,
-                'duration' => $attendance->clock_out 
+                'duration' => $attendance->clock_out
                     ? $this->formatDuration($attendance->clock_in, $attendance->clock_out)
                     : 'In Progress',
                 'date' => $attendance->clock_in->format('Y-m-d'),
@@ -108,7 +108,7 @@ class AttendanceController extends Controller
             ->get()
             ->map(fn ($e) => [
                 'id' => $e->id,
-                'name' => $e->first_name . ' ' . $e->last_name,
+                'name' => $e->first_name.' '.$e->last_name,
             ]);
 
         return Inertia::render('Time/Attendance/Admin', [
@@ -148,7 +148,7 @@ class AttendanceController extends Controller
                     'clock_in_display' => $attendance->clock_in->format('M d, Y g:i A'),
                     'clock_out' => $attendance->clock_out ? $attendance->clock_out->format('Y-m-d H:i:s') : null,
                     'clock_out_display' => $attendance->clock_out ? $attendance->clock_out->format('M d, Y g:i A') : null,
-                    'duration' => $attendance->clock_out 
+                    'duration' => $attendance->clock_out
                         ? $this->formatDuration($attendance->clock_in, $attendance->clock_out)
                         : 'In Progress',
                     'date' => $attendance->clock_in->format('Y-m-d'),
@@ -158,7 +158,7 @@ class AttendanceController extends Controller
         return Inertia::render('Time/Attendance/EmployeeRecords', [
             'employee' => [
                 'id' => $employee->id,
-                'name' => $employee->first_name . ' ' . $employee->last_name,
+                'name' => $employee->first_name.' '.$employee->last_name,
             ],
             'attendances' => $attendances,
             'startDate' => $startDate->toDateString(),
@@ -172,7 +172,7 @@ class AttendanceController extends Controller
         $diff = $start->diff($end);
         $hours = $diff->h + ($diff->days * 24);
         $minutes = $diff->i;
-        
+
         return sprintf('%d hrs %d mins', $hours, $minutes);
     }
 }

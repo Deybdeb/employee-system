@@ -25,7 +25,7 @@ class UserSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            
+
             // Create corresponding Employee record
             Employee::create([
                 'first_name' => 'Admin',
