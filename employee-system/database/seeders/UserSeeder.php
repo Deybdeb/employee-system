@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Employee;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -23,6 +24,14 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'created_at' => now(),
                 'updated_at' => now(),
+            ]);
+            
+            // Create corresponding Employee record
+            Employee::create([
+                'first_name' => 'Admin',
+                'last_name' => 'User',
+                'personal_email' => 'admin@example.com',
+                'work_email' => 'admin@example.com',
             ]);
         }
     }

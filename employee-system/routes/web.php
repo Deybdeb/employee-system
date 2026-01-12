@@ -3,12 +3,14 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\MyInfoController;
 use App\Http\Controllers\OvertimeRequestController;
 use App\Http\Controllers\TestingController; // Your new controller
+use App\Http\Controllers\TimesheetController;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
 
@@ -77,6 +79,31 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin', [OvertimeRequestController::class, 'admin'])->name('overtime-requests.admin');
         Route::post('/{id}/approve', [OvertimeRequestController::class, 'approve'])->name('overtime-requests.approve');
         Route::post('/{id}/decline', [OvertimeRequestController::class, 'decline'])->name('overtime-requests.decline');
+    });
+    // ---------------------------
+
+    // --- TIMESHEET MODULE ROUTES ---
+    Route::prefix('timesheets')->group(function () {
+        // Employee routes
+        Route::get('/', [TimesheetController::class, 'index'])->name('timesheets.index');
+        Route::post('/', [TimesheetController::class, 'store'])->name('timesheets.store');
+        Route::post('/{id}/submit', [TimesheetController::class, 'submit'])->name('timesheets.submit');
+
+        // HR/Admin routes
+        Route::get('/admin', [TimesheetController::class, 'admin'])->name('timesheets.admin');
+        Route::post('/{id}/approve', [TimesheetController::class, 'approve'])->name('timesheets.approve');
+        Route::post('/{id}/reject', [TimesheetController::class, 'reject'])->name('timesheets.reject');
+    });
+    // ---------------------------
+
+    // --- ATTENDANCE MODULE ROUTES ---
+    Route::prefix('attendance')->group(function () {
+        // Employee routes
+        Route::get('/', [AttendanceController::class, 'index'])->name('attendance.index');
+
+        // HR/Admin routes
+        Route::get('/admin', [AttendanceController::class, 'admin'])->name('attendance.admin');
+        Route::get('/employee/{employeeId}', [AttendanceController::class, 'employeeRecords'])->name('attendance.employee');
     });
     // ---------------------------
 

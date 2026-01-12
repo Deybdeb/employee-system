@@ -17,6 +17,11 @@ const route = (name, params = {}) => {
         'overtime-requests.index': '/overtime-requests',
         'overtime-requests.store': '/overtime-requests',
         'overtime-requests.admin': '/overtime-requests/admin',
+        'timesheets.index': '/timesheets',
+        'timesheets.store': '/timesheets',
+        'timesheets.admin': '/timesheets/admin',
+        'attendance.index': '/attendance',
+        'attendance.admin': '/attendance/admin',
         'logout': '/logout',
         'login': '/login',
         'register': '/register',
@@ -37,6 +42,10 @@ const route = (name, params = {}) => {
         if (name === 'overtime-requests.approve') return `/overtime-requests/${params}/approve`;
         if (name === 'overtime-requests.decline') return `/overtime-requests/${params}/decline`;
         if (name === 'overtime-requests.cancel') return `/overtime-requests/${params}/cancel`;
+        if (name === 'timesheets.submit') return `/timesheets/${params}/submit`;
+        if (name === 'timesheets.approve') return `/timesheets/${params}/approve`;
+        if (name === 'timesheets.reject') return `/timesheets/${params}/reject`;
+        if (name === 'attendance.employee') return `/attendance/employee/${params}`;
     }
     
     return routes[name] || `/${name.replace(/\./g, '/')}`;

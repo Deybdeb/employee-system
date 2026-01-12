@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
         // 1. ADD THE CALL TO YOUR USER SEEDER
         // This is the standard, clean way to run your specific seeder.
         $this->call(UserSeeder::class);
+        $this->call(TimesheetSeeder::class);
 
         // 2. REMOVE THE FACTORY CODE YOU HAD HERE
         // (You can use the factory in UserSeeder.php if you want more users,

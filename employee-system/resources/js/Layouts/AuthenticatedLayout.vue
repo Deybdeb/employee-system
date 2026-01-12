@@ -1,6 +1,6 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 
 const page = usePage();
 const isSidebarCollapsed = ref(false);
@@ -23,6 +23,16 @@ const closeUserDropdown = () => {
 const toggleMenuItem = (itemName) => {
     expandedMenuItems.value[itemName] = !expandedMenuItems.value[itemName];
 };
+
+// Initialize expanded state for Time menu on mount
+const initializeTimeMenu = () => {
+    // Expand Time menu by default
+    expandedMenuItems.value['Time'] = true;
+};
+
+onMounted(() => {
+    initializeTimeMenu();
+});
 
 // Access the route helper from Ziggy via the global window or page props
 // If not available globally, we can construct URLs manually
@@ -53,6 +63,15 @@ const route = (name, params = {}) => {
         'overtime-requests.approve': (id) => `/overtime-requests/${id}/approve`,
         'overtime-requests.decline': (id) => `/overtime-requests/${id}/decline`,
         'overtime-requests.cancel': (id) => `/overtime-requests/${id}/cancel`,
+        'timesheets.index': '/timesheets',
+        'timesheets.store': '/timesheets',
+        'timesheets.submit': (id) => `/timesheets/${id}/submit`,
+        'timesheets.admin': '/timesheets/admin',
+        'timesheets.approve': (id) => `/timesheets/${id}/approve`,
+        'timesheets.reject': (id) => `/timesheets/${id}/reject`,
+        'attendance.index': '/attendance',
+        'attendance.admin': '/attendance/admin',
+        'attendance.employee': (id) => `/attendance/employee/${id}`,
         'logout': '/logout',
     };
     
@@ -93,7 +112,36 @@ const navItems = computed(() => {
                     href: route('overtime-requests.admin') 
                 }
             ] : []
-        }, 
+        },
+        { 
+            name: 'Time', 
+            icon: 'fas fa-business-time', 
+            href: page.props.auth?.user?.is_admin ? route('timesheets.admin') : route('timesheets.index'),
+            exact: false,
+            subItems: page.props.auth?.user?.is_admin ? [
+                { 
+                    name: 'Timesheet Management', 
+                    icon: 'fas fa-user-clock', 
+                    href: route('timesheets.admin') 
+                },
+                { 
+                    name: 'Attendance Records', 
+                    icon: 'fas fa-users-cog', 
+                    href: route('attendance.admin') 
+                }
+            ] : [
+                { 
+                    name: 'My Timesheets', 
+                    icon: 'fas fa-clipboard-list', 
+                    href: route('timesheets.index') 
+                },
+                { 
+                    name: 'My Attendance', 
+                    icon: 'fas fa-calendar-check', 
+                    href: route('attendance.index') 
+                }
+            ]
+        },
     ];
     
     return items;
@@ -150,6 +198,9 @@ const headerText = computed(() => {
     }
     if (page.url.startsWith(route('overtime-requests.index'))) {
         return "Overtime Management - Submit, track, and manage overtime work requests and approvals.";
+    }
+    if (page.url.startsWith('/timesheets') || page.url.startsWith('/attendance')) {
+        return "Time - Module for tracking attendance, time sheets, and working hours.";
     }
     return "Dashboard - Overview of key HR information, announcements, and quick links to main modules.";
 });
