@@ -46,6 +46,7 @@ class MyInfoController extends Controller
     {
         // Remove spaces, dashes, parentheses
         $cleaned = preg_replace('/[\s\-()]/i', '', $number);
+
         // Accept formats: +639xxxxxxxxxx or 09xxxxxxxxxx
         return preg_match('/^(\+639|09)\d{9}$/', $cleaned);
     }
@@ -57,6 +58,7 @@ class MyInfoController extends Controller
     {
         // Remove spaces, dashes, parentheses for checking
         $cleaned = preg_replace('/[\s\-()]/i', '', $number);
+
         // Accept various landline formats with area codes
         return preg_match('/^(\+63|0)?\d{1,2}\d{4}\d{4}$/', $cleaned);
     }
@@ -242,7 +244,7 @@ class MyInfoController extends Controller
         $user = Auth::user();
         $employee = \App\Models\Employee::where('personal_email', $user->email)->first();
 
-        if (!$employee) {
+        if (! $employee) {
             return back()->withErrors(['error' => 'Employee record not found']);
         }
 
@@ -260,20 +262,20 @@ class MyInfoController extends Controller
         }
 
         // Validate phone number formats
-        if (!empty($validated['home_phone'])) {
-            if (!$this->validatePhilippineLandline($validated['home_phone'])) {
+        if (! empty($validated['home_phone'])) {
+            if (! $this->validatePhilippineLandline($validated['home_phone'])) {
                 return back()->withErrors(['home_phone' => 'Invalid landline format. Use format like (02) 1234-5678 or +63 2 1234 5678']);
             }
         }
 
-        if (!empty($validated['mobile_phone'])) {
-            if (!$this->validatePhilippineMobile($validated['mobile_phone'])) {
+        if (! empty($validated['mobile_phone'])) {
+            if (! $this->validatePhilippineMobile($validated['mobile_phone'])) {
                 return back()->withErrors(['mobile_phone' => 'Invalid mobile format. Use +63-9XX-XXX-XXXX or 09XX-XXX-XXXX']);
             }
         }
 
-        if (!empty($validated['work_phone'])) {
-            if (!$this->validatePhilippineMobile($validated['work_phone'])) {
+        if (! empty($validated['work_phone'])) {
+            if (! $this->validatePhilippineMobile($validated['work_phone'])) {
                 return back()->withErrors(['work_phone' => 'Invalid work phone format. Use +63-9XX-XXX-XXXX or 09XX-XXX-XXXX']);
             }
         }
@@ -290,13 +292,13 @@ class MyInfoController extends Controller
         $user = Auth::user();
         $employee = \App\Models\Employee::where('personal_email', $user->email)->first();
 
-        if (!$employee) {
+        if (! $employee) {
             return back()->withErrors(['error' => 'Employee record not found']);
         }
 
         $emergencyContact = EmergencyContact::find($id);
 
-        if (!$emergencyContact || $emergencyContact->employee_id !== $employee->id) {
+        if (! $emergencyContact || $emergencyContact->employee_id !== $employee->id) {
             return back()->withErrors(['error' => 'Emergency contact not found']);
         }
 
@@ -314,20 +316,20 @@ class MyInfoController extends Controller
         }
 
         // Validate phone number formats
-        if (!empty($validated['home_phone'])) {
-            if (!$this->validatePhilippineLandline($validated['home_phone'])) {
+        if (! empty($validated['home_phone'])) {
+            if (! $this->validatePhilippineLandline($validated['home_phone'])) {
                 return back()->withErrors(['home_phone' => 'Invalid landline format. Use format like (02) 1234-5678 or +63 2 1234 5678']);
             }
         }
 
-        if (!empty($validated['mobile_phone'])) {
-            if (!$this->validatePhilippineMobile($validated['mobile_phone'])) {
+        if (! empty($validated['mobile_phone'])) {
+            if (! $this->validatePhilippineMobile($validated['mobile_phone'])) {
                 return back()->withErrors(['mobile_phone' => 'Invalid mobile format. Use +63-9XX-XXX-XXXX or 09XX-XXX-XXXX']);
             }
         }
 
-        if (!empty($validated['work_phone'])) {
-            if (!$this->validatePhilippineMobile($validated['work_phone'])) {
+        if (! empty($validated['work_phone'])) {
+            if (! $this->validatePhilippineMobile($validated['work_phone'])) {
                 return back()->withErrors(['work_phone' => 'Invalid work phone format. Use +63-9XX-XXX-XXXX or 09XX-XXX-XXXX']);
             }
         }
@@ -342,13 +344,13 @@ class MyInfoController extends Controller
         $user = Auth::user();
         $employee = \App\Models\Employee::where('personal_email', $user->email)->first();
 
-        if (!$employee) {
+        if (! $employee) {
             return back()->withErrors(['error' => 'Employee record not found']);
         }
 
         $emergencyContact = EmergencyContact::find($id);
 
-        if (!$emergencyContact || $emergencyContact->employee_id !== $employee->id) {
+        if (! $emergencyContact || $emergencyContact->employee_id !== $employee->id) {
             return back()->withErrors(['error' => 'Emergency contact not found']);
         }
 
