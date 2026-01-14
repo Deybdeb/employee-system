@@ -1,19 +1,36 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
-const employee = usePage().props.employee;
+const page = usePage();
+const employee = page.props.employee;
+const isAdmin = computed(() => page.props.auth?.user?.is_admin);
 
 // Split name for display
 const nameParts = (employee.name || '').split(' ');
 const displayName = employee.name || 'User';
 
-const menuItems = [
-    { name: 'Personal Details', href: '/my-info/personal' },
-    { name: 'Contact Details', href: '/my-info/contact' },
-    { name: 'Emergency Contacts', href: '/my-info/emergency-contacts' },
-    { name: 'Change Password', href: '/my-info/password' },
-];
+const menuItems = computed(() => {
+    const items = [
+        { name: 'Personal Details', href: '/my-info/personal' },
+        { name: 'Contact Details', href: '/my-info/contact' },
+        { name: 'Emergency Contacts', href: '/my-info/emergency-contacts' },
+        { name: 'Change Password', href: '/my-info/password' },
+    ];
+    
+    // Add admin-only menu item
+    if (isAdmin.value) {
+        items.push({
+            name: 'Emergency Contacts Management',
+            href: '/admin/emergency-contacts',
+            icon: 'fas fa-users-cog',
+            isAdmin: true
+        });
+    }
+    
+    return items;
+});
 </script>
 
 <template>
@@ -41,7 +58,11 @@ const menuItems = [
                                     ? 'bg-brand-light border-brand-yellow text-brand-dark'
                                     : 'border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-700'"
                                 >
-                                    {{ item.name }}
+                                    <span class="flex items-center gap-2">
+                                        <i v-if="item.icon" :class="item.icon" class="text-xs"></i>
+                                        <span>{{ item.name }}</span>
+                                        <span v-if="item.isAdmin" class="ml-auto text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Admin</span>
+                                    </span>
                                 </Link>
                             </li>
                         </ul>

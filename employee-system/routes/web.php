@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\EmergencyContactController as AdminEmergencyContactController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
@@ -120,6 +121,15 @@ Route::middleware('auth')->group(function () {
         Route::post('/emergency-contacts', [MyInfoController::class, 'addEmergencyContact'])->name('my-info.emergency-contacts.store');
         Route::put('/emergency-contacts/{id}', [MyInfoController::class, 'updateEmergencyContact'])->name('my-info.emergency-contacts.update');
         Route::delete('/emergency-contacts/{id}', [MyInfoController::class, 'deleteEmergencyContact'])->name('my-info.emergency-contacts.destroy');
+    });
+    // ---------------------------
+
+    // --- ADMIN EMERGENCY CONTACTS MODULE ROUTES ---
+    Route::prefix('admin')->group(function () {
+        Route::get('/emergency-contacts', [AdminEmergencyContactController::class, 'index'])->name('admin.emergency-contacts.index');
+        Route::post('/emergency-contacts', [AdminEmergencyContactController::class, 'store'])->name('admin.emergency-contacts.store');
+        Route::put('/emergency-contacts/{id}', [AdminEmergencyContactController::class, 'update'])->name('admin.emergency-contacts.update');
+        Route::delete('/emergency-contacts/{id}', [AdminEmergencyContactController::class, 'destroy'])->name('admin.emergency-contacts.destroy');
     });
     // ---------------------------
 });

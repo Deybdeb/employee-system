@@ -72,6 +72,7 @@ const route = (name, params = {}) => {
         'attendance.index': '/attendance',
         'attendance.admin': '/attendance/admin',
         'attendance.employee': (id) => `/attendance/employee/${id}`,
+        'admin.emergency-contacts.index': '/admin/emergency-contacts',
         'logout': '/logout',
     };
     
@@ -143,8 +144,7 @@ const navItems = computed(() => {
             ]
         },
     ];
-    
-    return items;
+        return items;
 });
 
 const filteredNavItems = computed(() => {
@@ -202,6 +202,9 @@ const headerText = computed(() => {
     if (page.url.startsWith('/timesheets') || page.url.startsWith('/attendance')) {
         return "Time - Module for tracking attendance, time sheets, and working hours.";
     }
+    if (page.url.startsWith(route('admin.emergency-contacts.index'))) {
+        return "Emergency Contacts - Manage emergency contact information for all employees.";
+    }
     return "Dashboard - Overview of key HR information, announcements, and quick links to main modules.";
 });
 </script>
@@ -256,7 +259,7 @@ const headerText = computed(() => {
             <!-- Toggle Button -->
             <button 
                 @click="toggleSidebar"
-                class="absolute -right-4 top-24 w-8 h-8 bg-brand-yellow rounded-full shadow-md flex items-center justify-center hover:bg-brand-yellow/90 transition-colors z-40"
+                class="absolute -right-4 top-2  4 w-8 h-8 bg-brand-yellow rounded-full shadow-md flex items-center justify-center hover:bg-brand-yellow/90 transition-colors z-40"
             >
                 <i class="fas text-white text-sm transition-transform duration-300" 
                    :class="isSidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
