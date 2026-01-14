@@ -116,6 +116,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/contact', [MyInfoController::class, 'updateContact'])->name('my-info.contact.update');
         Route::get('/password', [MyInfoController::class, 'showPassword'])->name('my-info.password');
         Route::post('/password', [MyInfoController::class, 'updatePassword'])->name('my-info.password.update');
+        Route::get('/emergency-contacts', [MyInfoController::class, 'showEmergencyContacts'])->name('my-info.emergency-contacts');
+        Route::post('/emergency-contacts', [MyInfoController::class, 'addEmergencyContact'])->name('my-info.emergency-contacts.store');
+        Route::put('/emergency-contacts/{id}', [MyInfoController::class, 'updateEmergencyContact'])->name('my-info.emergency-contacts.update');
+        Route::delete('/emergency-contacts/{id}', [MyInfoController::class, 'deleteEmergencyContact'])->name('my-info.emergency-contacts.destroy');
     });
     // ---------------------------
 });

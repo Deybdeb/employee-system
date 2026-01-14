@@ -52,6 +52,11 @@ class Employee extends Authenticatable
         return $this->hasMany(Address::class);
     }
 
+    public function emergencyContacts(): HasMany
+    {
+        return $this->hasMany(EmergencyContact::class);
+    }
+
     /** gets user record based on email */
     public function user(): HasOne
     {

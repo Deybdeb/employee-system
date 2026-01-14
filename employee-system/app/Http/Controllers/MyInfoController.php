@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Address;
+use App\Models\EmergencyContact;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -36,6 +37,28 @@ class MyInfoController extends Controller
             'work_email' => $user->email,
             'addresses' => [],
         ]);
+    }
+
+    /**
+     * Validate Philippine mobile phone number (+63 format or 09 format)
+     */
+    private function validatePhilippineMobile($number)
+    {
+        // Remove spaces, dashes, parentheses
+        $cleaned = preg_replace('/[\s\-()]/i', '', $number);
+        // Accept formats: +639xxxxxxxxxx or 09xxxxxxxxxx
+        return preg_match('/^(\+639|09)\d{9}$/', $cleaned);
+    }
+
+    /**
+     * Validate Philippine landline number
+     */
+    private function validatePhilippineLandline($number)
+    {
+        // Remove spaces, dashes, parentheses for checking
+        $cleaned = preg_replace('/[\s\-()]/i', '', $number);
+        // Accept various landline formats with area codes
+        return preg_match('/^(\+63|0)?\d{1,2}\d{4}\d{4}$/', $cleaned);
     }
 
     /**
@@ -195,5 +218,142 @@ class MyInfoController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Password updated successfully');
+    }
+
+    public function showEmergencyContacts()
+    {
+        $user = Auth::user();
+        $employee = \App\Models\Employee::where('personal_email', $user->email)->first();
+
+        $emergencyContacts = [];
+        if ($employee) {
+            $employee->load('emergencyContacts');
+            $emergencyContacts = $employee->emergencyContacts;
+        }
+
+        return Inertia::render('MyInfo/EmergencyContacts', [
+            'employee' => $this->getEmployeeData(),
+            'emergencyContacts' => $emergencyContacts,
+        ]);
+    }
+
+    public function addEmergencyContact(Request $request)
+    {
+        $user = Auth::user();
+        $employee = \App\Models\Employee::where('personal_email', $user->email)->first();
+
+        if (!$employee) {
+            return back()->withErrors(['error' => 'Employee record not found']);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'relationship' => 'required|string|max:100',
+            'home_phone' => 'nullable|string|max:20',
+            'mobile_phone' => 'nullable|string|max:20',
+            'work_phone' => 'nullable|string|max:20',
+        ]);
+
+        // Ensure at least one phone number is provided
+        if (empty($validated['home_phone']) && empty($validated['mobile_phone']) && empty($validated['work_phone'])) {
+            return back()->withErrors(['phones' => 'At least one phone number must be provided']);
+        }
+
+        // Validate phone number formats
+        if (!empty($validated['home_phone'])) {
+            if (!$this->validatePhilippineLandline($validated['home_phone'])) {
+                return back()->withErrors(['home_phone' => 'Invalid landline format. Use format like (02) 1234-5678 or +63 2 1234 5678']);
+            }
+        }
+
+        if (!empty($validated['mobile_phone'])) {
+            if (!$this->validatePhilippineMobile($validated['mobile_phone'])) {
+                return back()->withErrors(['mobile_phone' => 'Invalid mobile format. Use +63-9XX-XXX-XXXX or 09XX-XXX-XXXX']);
+            }
+        }
+
+        if (!empty($validated['work_phone'])) {
+            if (!$this->validatePhilippineMobile($validated['work_phone'])) {
+                return back()->withErrors(['work_phone' => 'Invalid work phone format. Use +63-9XX-XXX-XXXX or 09XX-XXX-XXXX']);
+            }
+        }
+
+        EmergencyContact::create(array_merge($validated, [
+            'employee_id' => $employee->id,
+        ]));
+
+        return redirect()->back()->with('success', 'Emergency contact added successfully');
+    }
+
+    public function updateEmergencyContact(Request $request, $id)
+    {
+        $user = Auth::user();
+        $employee = \App\Models\Employee::where('personal_email', $user->email)->first();
+
+        if (!$employee) {
+            return back()->withErrors(['error' => 'Employee record not found']);
+        }
+
+        $emergencyContact = EmergencyContact::find($id);
+
+        if (!$emergencyContact || $emergencyContact->employee_id !== $employee->id) {
+            return back()->withErrors(['error' => 'Emergency contact not found']);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'relationship' => 'required|string|max:100',
+            'home_phone' => 'nullable|string|max:20',
+            'mobile_phone' => 'nullable|string|max:20',
+            'work_phone' => 'nullable|string|max:20',
+        ]);
+
+        // Ensure at least one phone number is provided
+        if (empty($validated['home_phone']) && empty($validated['mobile_phone']) && empty($validated['work_phone'])) {
+            return back()->withErrors(['phones' => 'At least one phone number must be provided']);
+        }
+
+        // Validate phone number formats
+        if (!empty($validated['home_phone'])) {
+            if (!$this->validatePhilippineLandline($validated['home_phone'])) {
+                return back()->withErrors(['home_phone' => 'Invalid landline format. Use format like (02) 1234-5678 or +63 2 1234 5678']);
+            }
+        }
+
+        if (!empty($validated['mobile_phone'])) {
+            if (!$this->validatePhilippineMobile($validated['mobile_phone'])) {
+                return back()->withErrors(['mobile_phone' => 'Invalid mobile format. Use +63-9XX-XXX-XXXX or 09XX-XXX-XXXX']);
+            }
+        }
+
+        if (!empty($validated['work_phone'])) {
+            if (!$this->validatePhilippineMobile($validated['work_phone'])) {
+                return back()->withErrors(['work_phone' => 'Invalid work phone format. Use +63-9XX-XXX-XXXX or 09XX-XXX-XXXX']);
+            }
+        }
+
+        $emergencyContact->update($validated);
+
+        return redirect()->back()->with('success', 'Emergency contact updated successfully');
+    }
+
+    public function deleteEmergencyContact($id)
+    {
+        $user = Auth::user();
+        $employee = \App\Models\Employee::where('personal_email', $user->email)->first();
+
+        if (!$employee) {
+            return back()->withErrors(['error' => 'Employee record not found']);
+        }
+
+        $emergencyContact = EmergencyContact::find($id);
+
+        if (!$emergencyContact || $emergencyContact->employee_id !== $employee->id) {
+            return back()->withErrors(['error' => 'Emergency contact not found']);
+        }
+
+        $emergencyContact->delete();
+
+        return redirect()->back()->with('success', 'Emergency contact deleted successfully');
     }
 }
