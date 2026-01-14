@@ -16,6 +16,7 @@ class EmergencyContactController extends Controller
     private function validatePhilippineMobile($number)
     {
         $cleaned = preg_replace('/[\s\-()]/i', '', $number);
+
         return preg_match('/^(\+639|09)\d{9}$/', $cleaned);
     }
 
@@ -25,6 +26,7 @@ class EmergencyContactController extends Controller
     private function validatePhilippineLandline($number)
     {
         $cleaned = preg_replace('/[\s\-()]/i', '', $number);
+
         return preg_match('/^(\+63|0)?\d{1,2}\d{4}\d{4}$/', $cleaned);
     }
 
