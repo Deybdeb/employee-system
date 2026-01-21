@@ -1,4 +1,4 @@
-<?php
+    <?php
 
 require __DIR__.'/vendor/autoload.php';
 
@@ -56,5 +56,5 @@ if ($employee) {
 echo "\n--- All Users ---\n";
 $users = User::all(['id', 'name', 'email', 'is_admin']);
 foreach ($users as $user) {
-    echo "ID: {$user->id}, Name: {$user->name}, Email: {$user->email}, is_admin: ".($user->is_admin ? 'Yes' : 'No')."\n";
+    echo "ID: {$user->id}, Name: {$user->name}, Email: {$user->email}, is_admin: " . ($user->is_admin ? 'Yes' : 'No') . "\n";
 }

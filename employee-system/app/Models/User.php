@@ -22,6 +22,12 @@ class User extends Authenticatable
         return $this->hasOne(Employee::class, 'personal_email', 'email');
     }
 
+    /** gets two factor code for user */
+    public function twoFactorCode(): HasOne
+    {
+        return $this->hasOne(TwoFactorCode::class);
+    }
+
     use HasFactory, Notifiable;
 
     protected $fillable = ['name', 'email', 'password', 'is_admin'];

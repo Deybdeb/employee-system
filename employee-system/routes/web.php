@@ -5,6 +5,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\LeaveRequestController;
@@ -40,6 +41,13 @@ Route::middleware('guest')->group(function () {
     Route::post('verify-otp', [PasswordResetController::class, 'verifyOTP'])->name('password.verify.submit');
     Route::get('reset-password', [PasswordResetController::class, 'resetForm'])->name('password.reset');
     Route::post('reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
+});
+
+// 2FA verification (after login but before dashboard) - accessible to auth users
+Route::middleware('auth')->group(function () {
+    Route::get('/login/verify-2fa', [TwoFactorController::class, 'show2FAVerification'])->name('login.verify-2fa');
+    Route::post('/login/verify-2fa', [TwoFactorController::class, 'verify2FA'])->name('login.verify-2fa.submit');
+    Route::post('/login/2fa/regenerate', [TwoFactorController::class, 'regenerate2FA'])->name('login.2fa.regenerate');
 });
 
 Route::middleware('auth')->group(function () {
@@ -117,6 +125,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/contact', [MyInfoController::class, 'updateContact'])->name('my-info.contact.update');
         Route::get('/password', [MyInfoController::class, 'showPassword'])->name('my-info.password');
         Route::post('/password', [MyInfoController::class, 'updatePassword'])->name('my-info.password.update');
+        Route::get('/2fa', [MyInfoController::class, 'show2FA'])->name('my-info.2fa');
+        Route::post('/2fa/setup', [MyInfoController::class, 'setup2FA'])->name('my-info.2fa.setup');
+        Route::post('/2fa/enable', [MyInfoController::class, 'enable2FA'])->name('my-info.2fa.enable');
+        Route::post('/2fa/disable', [MyInfoController::class, 'disable2FA'])->name('my-info.2fa.disable');
+        Route::post('/2fa/regenerate', [MyInfoController::class, 'regenerate2FA'])->name('my-info.2fa.regenerate');
         Route::get('/emergency-contacts', [MyInfoController::class, 'showEmergencyContacts'])->name('my-info.emergency-contacts');
         Route::post('/emergency-contacts', [MyInfoController::class, 'addEmergencyContact'])->name('my-info.emergency-contacts.store');
         Route::put('/emergency-contacts/{id}', [MyInfoController::class, 'updateEmergencyContact'])->name('my-info.emergency-contacts.update');

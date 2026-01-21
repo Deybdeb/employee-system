@@ -1,7 +1,9 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { useForm, router } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.css';
 
 // Access global route helper
 const route = window.route;
@@ -16,6 +18,9 @@ const props = defineProps({
 
 const activeTab = ref('my-timesheets');
 const isEditing = ref(false);
+const datePickerRef = ref(null);
+const calendarInstance = ref(null);
+const calendarContainerRef = ref(null);
 
 // Generate week dates array
 const weekDates = computed(() => {
@@ -146,6 +151,28 @@ const goToNextWeek = () => {
     router.get(route('timesheets.index'), { week_start: date.toISOString().split('T')[0] });
 };
 
+// Calendar functionality
+const getWeekStart = (date) => {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
+    return new Date(d.setDate(diff));
+};
+
+const onDateSelected = (selectedDates) => {
+    if (selectedDates.length > 0) {
+        const selectedDate = selectedDates[0];
+        const weekStart = getWeekStart(selectedDate);
+        router.get(route('timesheets.index'), { week_start: weekStart.toISOString().split('T')[0] });
+    }
+};
+
+const openCalendar = () => {
+    if (calendarInstance.value) {
+        calendarInstance.value.open();
+    }
+};
+
 const formatPeriod = computed(() => {
     const start = new Date(props.currentWeekStart);
     const end = new Date(props.currentWeekEnd);
@@ -173,6 +200,19 @@ const canSubmit = computed(() => {
 
 // Initialize on mount
 initializeEntries();
+
+// Initialize flatpickr calendar
+onMounted(() => {
+    if (datePickerRef.value && calendarContainerRef.value) {
+        calendarInstance.value = flatpickr(datePickerRef.value, {
+            onChange: onDateSelected,
+            defaultDate: new Date(props.currentWeekStart),
+            dateFormat: 'Y-m-d',
+            position: 'below',
+            appendTo: calendarContainerRef.value,
+        });
+    }
+});
 
 // Watch for timesheet changes
 watch(() => props.timesheet, () => {
@@ -219,7 +259,7 @@ watch(() => props.timesheet, () => {
                         <!-- Week Navigation -->
                         <div class="flex items-center gap-4">
                             <span class="text-sm text-gray-600">Timesheet Period</span>
-                            <div class="flex items-center gap-2">
+                            <div ref="calendarContainerRef" class="relative flex items-center gap-2">
                                 <button 
                                     @click="goToPreviousWeek"
                                     class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -229,9 +269,10 @@ watch(() => props.timesheet, () => {
                                 <div class="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium min-w-[200px] text-center">
                                     {{ formatPeriod }}
                                 </div>
-                                <button class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                                <button @click="openCalendar" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                                     <i class="far fa-calendar text-gray-600"></i>
                                 </button>
+                                <input ref="datePickerRef" style="display: none; visibility: hidden; width: 0; height: 0; padding: 0; margin: 0; border: 0;" />
                                 <button 
                                     @click="goToNextWeek"
                                     class="p-2 hover:bg-gray-100 rounded-lg transition-colors"

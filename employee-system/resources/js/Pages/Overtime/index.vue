@@ -318,7 +318,7 @@ const cancelRequest = (id) => {
                                         readonly
                                         class="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow focus:border-transparent transition-all bg-white text-gray-900 cursor-pointer"
                                         :class="{ 'border-red-500 focus:ring-red-500': form.errors.end_time }"
-                                        placeholder="--:--"
+                                        placeholder="--:--  "
                                     >
                                     <i class="fas fa-clock absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                 </div>

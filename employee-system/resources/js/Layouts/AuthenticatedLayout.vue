@@ -26,8 +26,9 @@ const toggleMenuItem = (itemName) => {
 
 // Initialize expanded state for Time menu on mount
 const initializeTimeMenu = () => {
-    // Expand Time menu by default
-    expandedMenuItems.value['Time'] = true;
+    
+    expandedMenuItems.value['Time'] = false;
+    
 };
 
 onMounted(() => {
@@ -50,6 +51,8 @@ const route = (name, params = {}) => {
         'my-info.contact': '/my-info/contact',
         'my-info.password': '/my-info/password',
         'my-info.password.update': '/my-info/password',
+        'my-info.2fa': '/my-info/2fa',
+        'login.verify-2fa': '/login/verify-2fa',
         'leave-requests.index': '/leave-requests',
         'leave-requests.create': '/leave-requests/create',
         'leave-requests.store': '/leave-requests',
@@ -259,7 +262,7 @@ const headerText = computed(() => {
             <!-- Toggle Button -->
             <button 
                 @click="toggleSidebar"
-                class="absolute -right-4 top-2  4 w-8 h-8 bg-brand-yellow rounded-full shadow-md flex items-center justify-center hover:bg-brand-yellow/90 transition-colors z-40"
+                class="absolute -right-4 top-[calc(20%-1rem)] w-8 h-6 bg-brand-yellow rounded-full shadow-md flex items-center justify-center hover:bg-brand-yellow/90 transition-colors z-40"
             >
                 <i class="fas text-white text-sm transition-transform duration-300" 
                    :class="isSidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>

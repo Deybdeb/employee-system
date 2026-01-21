@@ -15,8 +15,8 @@ const menuItems = computed(() => {
     const items = [
         { name: 'Personal Details', href: '/my-info/personal' },
         { name: 'Contact Details', href: '/my-info/contact' },
-        { name: 'Emergency Contacts', href: '/my-info/emergency-contacts' },
         { name: 'Change Password', href: '/my-info/password' },
+        { name: 'Emergency Contacts', href: '/my-info/emergency-contacts' },
     ];
     
     // Add admin-only menu item

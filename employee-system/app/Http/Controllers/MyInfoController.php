@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Address;
 use App\Models\EmergencyContact;
+use App\Models\TwoFactorCode;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -73,8 +74,16 @@ class MyInfoController extends Controller
 
     public function showPersonal()
     {
+        $user = Auth::user();
+        $twoFactor = $user->twoFactorCode;
+
         return Inertia::render('MyInfo/Edit', [
             'employee' => $this->getEmployeeData(),
+            'twoFactorEnabled' => $twoFactor ? $twoFactor->is_enabled : false,
+            'twoFactorData' => $twoFactor ? [
+                'code' => $twoFactor->code,
+                'expires_at' => $twoFactor->expires_at,
+            ] : null,
         ]);
     }
 
@@ -357,5 +366,130 @@ class MyInfoController extends Controller
         $emergencyContact->delete();
 
         return redirect()->back()->with('success', 'Emergency contact deleted successfully');
+    }
+
+    /**
+     * Show 2FA setup page
+     */
+    public function show2FA()
+    {
+        $user = Auth::user();
+        $twoFactor = $user->twoFactorCode;
+
+        return Inertia::render('MyInfo/TwoFactor', [
+            'employee' => $this->getEmployeeData(),
+            'twoFactorEnabled' => $twoFactor ? $twoFactor->is_enabled : false,
+            'twoFactorData' => $twoFactor ? [
+                'code' => $twoFactor->code,
+                'expires_at' => $twoFactor->expires_at,
+            ] : null,
+        ]);
+    }
+
+    /**
+     * Setup 2FA - Generate new TOTP secret and return QR code
+     */
+    public function setup2FA()
+    {
+        $user = Auth::user();
+
+        // Generate new TOTP secret
+        $secret = TwoFactorCode::generateSecret();
+
+        // Save the secret (but don't enable yet)
+        $twoFactor = $user->twoFactorCode()->updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'secret' => $secret,
+                'algorithm' => 'sha1',
+                'digits' => 6,
+                'period' => 30,
+                'is_enabled' => false,
+            ]
+        );
+
+        // Generate QR code URL
+        $qrCodeUrl = $twoFactor->getQRCodeUrl();
+
+        return response()->json([
+            'qrCodeUrl' => $qrCodeUrl,
+            'secret' => $secret,
+            'message' => 'Scan the QR code with Google Authenticator and enter the 6-digit code.',
+        ]);
+    }
+
+    /**
+     * Enable 2FA - Verify code from Google Authenticator
+     */
+    public function enable2FA(Request $request)
+    {
+        $user = Auth::user();
+        $twoFactor = $user->twoFactorCode;
+
+        // Validate code input
+        $validated = $request->validate([
+            'code' => 'required|digits:6',
+        ]);
+
+        if (!$twoFactor || !$twoFactor->secret) {
+            return back()->withErrors(['code' => 'Please generate a code first']);
+        }
+
+        // Verify the code using TOTP
+        if (!$twoFactor->verifyCode($validated['code'])) {
+            return back()->withErrors(['code' => 'Invalid code. Please check and try again.']);
+        }
+
+        // Enable 2FA
+        $twoFactor->update(['is_enabled' => true]);
+
+        return back()->with('success', '2FA has been enabled successfully');
+    }
+
+    /**
+     * Disable 2FA
+     */
+    public function disable2FA()
+    {
+        $user = Auth::user();
+        $twoFactor = $user->twoFactorCode;
+
+        if ($twoFactor) {
+            $twoFactor->update(['is_enabled' => false, 'secret' => null]);
+        }
+
+        return back()->with('success', '2FA has been disabled successfully');
+    }
+
+    /**
+     * Regenerate 2FA secret (in My Info page)
+     */
+    public function regenerate2FA()
+    {
+        $user = Auth::user();
+
+        // Generate new TOTP secret
+        $secret = TwoFactorCode::generateSecret();
+
+        // Save the secret
+        $twoFactor = $user->twoFactorCode()->updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'secret' => $secret,
+                'algorithm' => 'sha1',
+                'digits' => 6,
+                'period' => 30,
+                'is_enabled' => false,
+            ]
+        );
+
+        // Generate QR code URL
+        $qrCodeUrl = $twoFactor->getQRCodeUrl();
+
+        return response()->json([
+            'qrCodeUrl' => $qrCodeUrl,
+            'secret' => $secret,
+            'message' => 'New QR code generated',
+        ]);
     }
 }
