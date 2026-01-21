@@ -431,12 +431,12 @@ class MyInfoController extends Controller
             'code' => 'required|digits:6',
         ]);
 
-        if (!$twoFactor || !$twoFactor->secret) {
+        if (! $twoFactor || ! $twoFactor->secret) {
             return back()->withErrors(['code' => 'Please generate a code first']);
         }
 
         // Verify the code using TOTP
-        if (!$twoFactor->verifyCode($validated['code'])) {
+        if (! $twoFactor->verifyCode($validated['code'])) {
             return back()->withErrors(['code' => 'Invalid code. Please check and try again.']);
         }
 
