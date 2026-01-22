@@ -1,6 +1,7 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref, onMounted } from 'vue';
+import ToastContainer from '@/Components/ToastContainer.vue';
 
 const page = usePage();
 const isSidebarCollapsed = ref(false);
@@ -146,6 +147,21 @@ const navItems = computed(() => {
                 }
             ]
         },
+        ...(page.props.auth?.user?.is_admin ? [
+            { 
+                name: 'Time Management', 
+                icon: 'fas fa-hourglass-start', 
+                href: route('admin.time-logs.index'),
+                exact: false,
+                subItems: [
+                    { 
+                        name: 'Time Logs', 
+                        icon: 'fas fa-list', 
+                        href: route('admin.time-logs.index') 
+                    }
+                ]
+            }
+        ] : []),
     ];
         return items;
 });
@@ -214,6 +230,8 @@ const headerText = computed(() => {
 
 <template>
     <div class="min-h-screen bg-brand-light font-sans text-brand-dark">
+        
+        <ToastContainer />
 
         <header 
             class="fixed top-0 left-0 right-0 h-[70px] bg-brand-yellow z-10 flex items-center shadow-sm transition-all duration-300"

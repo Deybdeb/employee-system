@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\EmergencyContactController as AdminEmergencyContactController;
+use App\Http\Controllers\Admin\TimeLogController as AdminTimeLogController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\MyInfoController;
 use App\Http\Controllers\OvertimeRequestController;
 use App\Http\Controllers\TestingController; // Your new controller
+use App\Http\Controllers\TimeLogController;
 use App\Http\Controllers\TimesheetController;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
@@ -112,6 +114,9 @@ Route::middleware('auth')->group(function () {
 
         // HR/Admin routes
         Route::get('/admin', [AttendanceController::class, 'admin'])->name('attendance.admin');
+        Route::post('/create-manual', [AttendanceController::class, 'createManualEntry'])->name('attendance.create-manual');
+        Route::put('/{id}', [AttendanceController::class, 'updateAttendance'])->name('attendance.update');
+        Route::delete('/{id}', [AttendanceController::class, 'deleteTimeLog'])->name('attendance.destroy');
         Route::get('/employee/{employeeId}', [AttendanceController::class, 'employeeRecords'])->name('attendance.employee');
     });
     // ---------------------------
@@ -137,12 +142,36 @@ Route::middleware('auth')->group(function () {
     });
     // ---------------------------
 
+    // --- TIME LOGS MODULE ROUTES ---
+    Route::prefix('time-logs')->group(function () {
+        // Employee routes
+        Route::post('/', [TimeLogController::class, 'store'])->name('time-logs.store');
+        Route::get('/my-logs', [TimeLogController::class, 'myLogs'])->name('time-logs.myLogs');
+        Route::get('/latest', [TimeLogController::class, 'getLatest'])->name('time-logs.latest');
+        Route::get('/{id}/photo', [TimeLogController::class, 'getPhoto'])->name('time-logs.photo');
+    });
+    // ---------------------------
+
     // --- ADMIN EMERGENCY CONTACTS MODULE ROUTES ---
     Route::prefix('admin')->group(function () {
         Route::get('/emergency-contacts', [AdminEmergencyContactController::class, 'index'])->name('admin.emergency-contacts.index');
         Route::post('/emergency-contacts', [AdminEmergencyContactController::class, 'store'])->name('admin.emergency-contacts.store');
         Route::put('/emergency-contacts/{id}', [AdminEmergencyContactController::class, 'update'])->name('admin.emergency-contacts.update');
         Route::delete('/emergency-contacts/{id}', [AdminEmergencyContactController::class, 'destroy'])->name('admin.emergency-contacts.destroy');
+        
+        // Time logs management routes (admin only)
+        Route::prefix('time-logs')->group(function () {
+            // Export route MUST come before {id} to avoid being treated as an ID
+            Route::get('/export/csv', [AdminTimeLogController::class, 'exportCsv'])->name('admin.time-logs.export-csv');
+            Route::get('/{userId}/stats', [AdminTimeLogController::class, 'getUserStats'])->name('admin.time-logs.stats');
+            
+            Route::get('/', [AdminTimeLogController::class, 'index'])->name('admin.time-logs.index');
+            Route::post('/', [AdminTimeLogController::class, 'store'])->name('admin.time-logs.store');
+            Route::get('/{id}', [AdminTimeLogController::class, 'show'])->name('admin.time-logs.show');
+            Route::get('/{id}/photo', [AdminTimeLogController::class, 'getPhoto'])->name('admin.time-logs.photo');
+            Route::put('/{id}', [AdminTimeLogController::class, 'update'])->name('admin.time-logs.update');
+            Route::delete('/{id}', [AdminTimeLogController::class, 'destroy'])->name('admin.time-logs.destroy');
+        });
     });
     // ---------------------------
 });
@@ -150,4 +179,28 @@ Route::middleware('auth')->group(function () {
 if (App::isLocal()) {
     // --- TESTING ROUTES ---
     Route::get('/testing', [TestingController::class, 'index'])->name('testing.index');
+    
+    // Debug TOTP verification
+    Route::get('/debug/totp', function () {
+        $user = auth()->user();
+        if (!$user || !$user->twoFactorCode) {
+            return response()->json(['error' => 'User not authenticated or 2FA not set up'], 404);
+        }
+        
+        $twoFactor = $user->twoFactorCode;
+        $totp = $twoFactor->getTotp();
+        $currentCode = $totp->now();
+        $secret = $twoFactor->secret;
+        
+        return response()->json([
+            'user' => $user->email,
+            'secret' => $secret,
+            'current_code' => $currentCode,
+            'timestamp' => now()->timestamp,
+            'verification_test' => [
+                'current_code_valid' => $twoFactor->verifyCode($currentCode),
+                'wrong_code_valid' => $twoFactor->verifyCode('000000'),
+            ]
+        ]);
+    })->middleware('auth');
 }

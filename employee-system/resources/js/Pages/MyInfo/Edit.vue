@@ -84,12 +84,18 @@ const generateCode = async () => {
     }
 };
 
-const submitCode = () => {
-    twoFAForm.code = verificationCode.value;
+const submitCode = async () => {
+    try {
+        const response = await fetch(route('my-info.2fa.enable'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': page.props.csrf_token,
+            },
+            body: JSON.stringify({ code: verificationCode.value }),
+        });
 
-    twoFAForm.post(route('my-info.2fa.enable'), {
-        preserveScroll: true,
-        onSuccess: () => {
+        if (response.ok) {
             setupStarted.value = false;
             verificationCode.value = '';
             qrCodeUrl.value = '';
@@ -100,15 +106,24 @@ const submitCode = () => {
                 showSuccessPopup.value = false;
                 window.location.reload();
             }, 3000);
-        },
-        onError: (errors) => {
-            errorMessage.value = errors.code || 'Invalid code. Please try again.';
+        } else if (response.status === 422) {
+            const data = await response.json();
+            errorMessage.value = data.errors?.code || 'Invalid code. Please try again.';
             showErrorPopup.value = true;
             setTimeout(() => {
                 showErrorPopup.value = false;
             }, 3000);
-        },
-    });
+        } else {
+            throw new Error('Failed to enable 2FA');
+        }
+    } catch (error) {
+        console.error('Error enabling 2FA:', error);
+        errorMessage.value = 'An error occurred. Please try again.';
+        showErrorPopup.value = true;
+        setTimeout(() => {
+            showErrorPopup.value = false;
+        }, 3000);
+    }
 };
 
 const regenerateCode = async () => {
@@ -145,26 +160,35 @@ const regenerateCode = async () => {
     }
 };
 
-const disable2FA = () => {
+const disable2FA = async () => {
     if (confirm('Are you sure you want to disable 2FA?')) {
-        twoFAForm.post(route('my-info.2fa.disable'), {
-            preserveScroll: true,
-            onSuccess: () => {
+        try {
+            const response = await fetch(route('my-info.2fa.disable'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': page.props.csrf_token,
+                },
+            });
+
+            if (response.ok) {
                 successMessage.value = '2FA has been disabled';
                 showSuccessPopup.value = true;
                 setTimeout(() => {
                     showSuccessPopup.value = false;
+                    window.location.reload();
                 }, 3000);
-                window.location.reload();
-            },
-            onError: (errors) => {
-                errorMessage.value = errors.error || 'Failed to disable 2FA';
-                showErrorPopup.value = true;
-                setTimeout(() => {
-                    showErrorPopup.value = false;
-                }, 3000);
-            },
-        });
+            } else {
+                throw new Error('Failed to disable 2FA');
+            }
+        } catch (error) {
+            console.error('Error disabling 2FA:', error);
+            errorMessage.value = 'Failed to disable 2FA. Please try again.';
+            showErrorPopup.value = true;
+            setTimeout(() => {
+                showErrorPopup.value = false;
+            }, 3000);
+        }
     }
 };
 

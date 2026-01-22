@@ -40,6 +40,7 @@ class DashboardController extends Controller
             'isLocal' => app()->isLocal(),
             'flash' => ['success_message' => session('success_message')],
             'serverTime' => $serverTime,
+            'csrf_token' => csrf_token(),
         ]);
     }
 

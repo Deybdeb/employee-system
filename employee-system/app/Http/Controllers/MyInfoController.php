@@ -431,19 +431,19 @@ class MyInfoController extends Controller
             'code' => 'required|digits:6',
         ]);
 
-        if (! $twoFactor || ! $twoFactor->secret) {
-            return back()->withErrors(['code' => 'Please generate a code first']);
+        if (!$twoFactor || !$twoFactor->secret) {
+            return response()->json(['errors' => ['code' => 'Please generate a code first']], 422);
         }
 
         // Verify the code using TOTP
-        if (! $twoFactor->verifyCode($validated['code'])) {
-            return back()->withErrors(['code' => 'Invalid code. Please check and try again.']);
+        if (!$twoFactor->verifyCode($validated['code'])) {
+            return response()->json(['errors' => ['code' => 'Invalid code. Please check and try again.']], 422);
         }
 
         // Enable 2FA
         $twoFactor->update(['is_enabled' => true]);
 
-        return back()->with('success', '2FA has been enabled successfully');
+        return response()->json(['success' => true, 'message' => '2FA has been enabled successfully'], 200);
     }
 
     /**
@@ -458,7 +458,7 @@ class MyInfoController extends Controller
             $twoFactor->update(['is_enabled' => false, 'secret' => null]);
         }
 
-        return back()->with('success', '2FA has been disabled successfully');
+        return response()->json(['success' => true, 'message' => '2FA has been disabled successfully'], 200);
     }
 
     /**

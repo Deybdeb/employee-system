@@ -22,6 +22,18 @@ const route = (name, params = {}) => {
         'timesheets.admin': '/timesheets/admin',
         'attendance.index': '/attendance',
         'attendance.admin': '/attendance/admin',
+        'admin.time-logs.index': '/admin/time-logs',
+        'admin.time-logs.store': '/admin/time-logs',
+        'admin.time-logs.export-csv': '/admin/time-logs/export/csv',
+        'admin.time-logs.show': (id) => `/admin/time-logs/${id}`,
+        'admin.time-logs.photo': (id) => `/admin/time-logs/${id}/photo`,
+        'admin.time-logs.update': (id) => `/admin/time-logs/${id}`,
+        'admin.time-logs.destroy': (id) => `/admin/time-logs/${id}`,
+        'admin.time-logs.stats': (userId) => `/admin/time-logs/${userId}/stats`,
+        'time-logs.store': '/time-logs',
+        'time-logs.latest': '/time-logs/latest',
+        'time-logs.myLogs': '/time-logs/my-logs',
+        'time-logs.photo': (id) => `/time-logs/${id}/photo`,
         'logout': '/logout',
         'login': '/login',
         'register': '/register',
@@ -32,6 +44,11 @@ const route = (name, params = {}) => {
         'password.reset': '/reset-password',
         'password.update': '/reset-password',
     };
+    
+    // Handle routes that are functions
+    if (typeof routes[name] === 'function') {
+        return routes[name](params);
+    }
     
     // Handle routes with parameters
     if (typeof params === 'number' || typeof params === 'string') {

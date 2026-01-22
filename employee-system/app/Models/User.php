@@ -28,6 +28,12 @@ class User extends Authenticatable
         return $this->hasOne(TwoFactorCode::class);
     }
 
+    /** gets time logs for user */
+    public function timeLogs(): HasMany
+    {
+        return $this->hasMany(TimeLog::class);
+    }
+
     use HasFactory, Notifiable;
 
     protected $fillable = ['name', 'email', 'password', 'is_admin'];
