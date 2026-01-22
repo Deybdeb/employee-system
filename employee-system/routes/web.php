@@ -158,13 +158,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/emergency-contacts', [AdminEmergencyContactController::class, 'store'])->name('admin.emergency-contacts.store');
         Route::put('/emergency-contacts/{id}', [AdminEmergencyContactController::class, 'update'])->name('admin.emergency-contacts.update');
         Route::delete('/emergency-contacts/{id}', [AdminEmergencyContactController::class, 'destroy'])->name('admin.emergency-contacts.destroy');
-        
+
         // Time logs management routes (admin only)
         Route::prefix('time-logs')->group(function () {
             // Export route MUST come before {id} to avoid being treated as an ID
             Route::get('/export/csv', [AdminTimeLogController::class, 'exportCsv'])->name('admin.time-logs.export-csv');
             Route::get('/{userId}/stats', [AdminTimeLogController::class, 'getUserStats'])->name('admin.time-logs.stats');
-            
+
             Route::get('/', [AdminTimeLogController::class, 'index'])->name('admin.time-logs.index');
             Route::post('/', [AdminTimeLogController::class, 'store'])->name('admin.time-logs.store');
             Route::get('/{id}', [AdminTimeLogController::class, 'show'])->name('admin.time-logs.show');
@@ -179,19 +179,19 @@ Route::middleware('auth')->group(function () {
 if (App::isLocal()) {
     // --- TESTING ROUTES ---
     Route::get('/testing', [TestingController::class, 'index'])->name('testing.index');
-    
+
     // Debug TOTP verification
     Route::get('/debug/totp', function () {
         $user = auth()->user();
-        if (!$user || !$user->twoFactorCode) {
+        if (! $user || ! $user->twoFactorCode) {
             return response()->json(['error' => 'User not authenticated or 2FA not set up'], 404);
         }
-        
+
         $twoFactor = $user->twoFactorCode;
         $totp = $twoFactor->getTotp();
         $currentCode = $totp->now();
         $secret = $twoFactor->secret;
-        
+
         return response()->json([
             'user' => $user->email,
             'secret' => $secret,
@@ -200,7 +200,7 @@ if (App::isLocal()) {
             'verification_test' => [
                 'current_code_valid' => $twoFactor->verifyCode($currentCode),
                 'wrong_code_valid' => $twoFactor->verifyCode('000000'),
-            ]
+            ],
         ]);
     })->middleware('auth');
 }
