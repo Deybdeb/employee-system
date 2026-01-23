@@ -131,7 +131,7 @@ const handleSubmit = async () => {
         <!-- Current Time Display -->
         <div class="mb-6 p-4 bg-blue-50 rounded-lg">
             <p class="text-xs text-gray-600 mb-1">Current Server Time (GMT +8:00)</p>
-            <p class="text-2xl font-bold text-gray-900 font-mono">
+            <p class="text-2xl font-bold text-gray-900" style="font-family: 'Space Mono', monospace;">
                 {{ todayTime }}
             </p>
         </div>

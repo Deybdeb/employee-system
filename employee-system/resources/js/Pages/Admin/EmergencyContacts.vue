@@ -3,7 +3,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { useForm, usePage, router } from '@inertiajs/vue3';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import Toast from '@/Components/Toast.vue';
 import { ref, watch, computed } from 'vue';
 
 const props = defineProps({
@@ -19,9 +18,6 @@ const selectedEmployeeId = ref(null);
 const confirmDeleteId = ref(null);
 const searchQuery = ref('');
 const filterEmployeeId = ref('');
-const toastMessage = ref('');
-const toastType = ref('info');
-const showToast = ref(false);
 
 // Philippine phone validation functions
 const validatePhilippineMobile = (number) => {
@@ -55,23 +51,18 @@ const form = useForm({
 });
 
 const displayToast = (message, type = 'info', duration = 4000) => {
-    toastMessage.value = message;
-    toastType.value = type;
-    showToast.value = true;
-    if (duration > 0) {
-        setTimeout(() => {
-            showToast.value = false;
-        }, duration);
+    if (typeof window !== 'undefined' && window.showToast) {
+        window.showToast(message, type, duration);
     }
 };
 
 // Watch for flash messages from Laravel
 watch(() => page.props.flash, (flash) => {
-    if (flash && flash.success) {
-        displayToast(flash.success, 'success', 4000);
+    if (flash && flash.success && window.showToast) {
+        window.showToast(flash.success, 'success');
     }
-    if (flash && flash.error) {
-        displayToast(flash.error, 'error', 4000);
+    if (flash && flash.error && window.showToast) {
+        window.showToast(flash.error, 'error');
     }
 }, { deep: true, immediate: true });
 
@@ -249,14 +240,6 @@ const getEmployeeName = (employeeId) => {
 
 <template>
     <AuthenticatedLayout>
-        <!-- Toast Notification -->
-        <Toast
-            :message="toastMessage"
-            :type="toastType"
-            :show="showToast"
-            @close="() => (showToast = false)"
-        />
-
         <div class="mb-6">
             <h1 class="text-2xl font-bold text-gray-800">Emergency Contacts Management</h1>
             <p class="text-sm text-gray-600 mt-1">Manage emergency contacts for all employees</p>

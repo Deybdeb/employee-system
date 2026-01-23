@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\EmergencyContactController as AdminEmergencyContactController;
+use App\Http\Controllers\Admin\EmployeeController as AdminEmployeeController;
 use App\Http\Controllers\Admin\TimeLogController as AdminTimeLogController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\Auth\LoginController;
@@ -171,6 +172,18 @@ Route::middleware('auth')->group(function () {
             Route::get('/{id}/photo', [AdminTimeLogController::class, 'getPhoto'])->name('admin.time-logs.photo');
             Route::put('/{id}', [AdminTimeLogController::class, 'update'])->name('admin.time-logs.update');
             Route::delete('/{id}', [AdminTimeLogController::class, 'destroy'])->name('admin.time-logs.destroy');
+        });
+
+        // Employee management routes (admin only)
+        Route::prefix('employees')->group(function () {
+            Route::get('/', [AdminEmployeeController::class, 'index'])->name('admin.employees.index');
+            Route::post('/', [AdminEmployeeController::class, 'store'])->name('admin.employees.store');
+            Route::get('/{id}', [AdminEmployeeController::class, 'show'])->name('admin.employees.show');
+            Route::put('/{id}/personal', [AdminEmployeeController::class, 'updatePersonal'])->name('admin.employees.update-personal');
+            Route::put('/{id}/contact', [AdminEmployeeController::class, 'updateContact'])->name('admin.employees.update-contact');
+            Route::post('/{id}/disable-2fa', [AdminEmployeeController::class, 'disable2FA'])->name('admin.employees.disable-2fa');
+            Route::get('/{id}/2fa-status', [AdminEmployeeController::class, 'get2FAStatus'])->name('admin.employees.2fa-status');
+            Route::delete('/{id}', [AdminEmployeeController::class, 'destroy'])->name('admin.employees.destroy');
         });
     });
     // ---------------------------

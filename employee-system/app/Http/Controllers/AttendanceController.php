@@ -157,7 +157,7 @@ class AttendanceController extends Controller
     public function createManualEntry(Request $request)
     {
         // Admin authorization
-        abort_if(! auth()->user()->is_admin, 403);
+        abort_if(!auth()->user()->is_admin, 403);
 
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
@@ -201,7 +201,7 @@ class AttendanceController extends Controller
     public function updateAttendance(Request $request, $id)
     {
         // Admin authorization
-        abort_if(! auth()->user()->is_admin, 403);
+        abort_if(!auth()->user()->is_admin, 403);
 
         $timeLog = TimeLog::findOrFail($id);
 
@@ -242,7 +242,7 @@ class AttendanceController extends Controller
     public function deleteTimeLog($id)
     {
         // Admin authorization
-        abort_if(! auth()->user()->is_admin, 403);
+        abort_if(!auth()->user()->is_admin, 403);
 
         try {
             $timeLog = TimeLog::withTrashed()->findOrFail($id);
@@ -255,7 +255,7 @@ class AttendanceController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete time entry: '.$e->getMessage(),
+                'message' => 'Failed to delete time entry: ' . $e->getMessage(),
             ], 500);
         }
     }

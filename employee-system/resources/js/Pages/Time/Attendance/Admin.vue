@@ -398,7 +398,7 @@ const summaryStats = computed(() => {
         </div>
 
         <!-- Manual Entry Modal -->
-        <div v-if="showManualModal" class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md">
+        <div v-if="showManualModal" class="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-md">
             <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-900">Create Manual Entry</h3>
@@ -449,7 +449,7 @@ const summaryStats = computed(() => {
         </div>
 
         <!-- Edit Modal -->
-        <div v-if="showEditModal && selectedLogForEdit" class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md">
+        <div v-if="showEditModal && selectedLogForEdit" class="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-md">
             <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-900">Edit Time Log</h3>

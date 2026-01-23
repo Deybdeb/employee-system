@@ -77,6 +77,8 @@ const route = (name, params = {}) => {
         'attendance.admin': '/attendance/admin',
         'attendance.employee': (id) => `/attendance/employee/${id}`,
         'admin.emergency-contacts.index': '/admin/emergency-contacts',
+        'admin.employees.index': '/admin/employees',
+        'admin.employees.show': (id) => `/admin/employees/${id}`,
         'logout': '/logout',
     };
     
