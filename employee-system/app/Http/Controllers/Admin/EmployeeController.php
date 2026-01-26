@@ -17,7 +17,7 @@ class EmployeeController extends Controller
      */
     private function authorizeAdmin(): void
     {
-        if (!Auth::user()->is_admin) {
+        if (! Auth::user()->is_admin) {
             abort(403, 'Unauthorized access to admin panel');
         }
     }
@@ -72,7 +72,7 @@ class EmployeeController extends Controller
             ->get()
             ->map(function ($employee) {
                 $address = $employee->addresses->first();
-                
+
                 // Get user record to check 2FA status
                 $user = User::where('email', $employee->personal_email)->first();
                 $twoFactorEnabled = false;
@@ -96,7 +96,7 @@ class EmployeeController extends Controller
                             $address->country,
                         ])))
                         : 'Not specified',
-                    'initials' => strtoupper(substr($employee->first_name, 0, 1) . substr($employee->last_name, 0, 1)),
+                    'initials' => strtoupper(substr($employee->first_name, 0, 1).substr($employee->last_name, 0, 1)),
                     'two_factor_enabled' => $twoFactorEnabled,
                 ];
             });
