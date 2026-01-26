@@ -115,9 +115,9 @@ const syncLatestStatus = async () => {
         </div>
 
         <!-- Current Time Display -->
-        <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+        <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
             <p class="text-xs text-gray-600 mb-1">Current Server Time (GMT +8:00)</p>
-            <p class="text-lg font-bold text-gray-900 font-mono">
+            <p class="text-lg text-gray-900 font-sans font-bold">
                 {{ todayTime }}
             </p>
         </div>

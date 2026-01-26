@@ -213,7 +213,7 @@ const submitClockEntry = async () => {
                 </label>
                 <textarea
                     v-model="notes"
-                    placeholder="Add any notes (e.g., 'Started morning shift', 'Returned from break')"
+                    placeholder="Add notes "
                     maxlength="500"
                     rows="2"
                     class="w-full px-2.5 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-yellow focus:border-transparent resize-none"
@@ -226,7 +226,7 @@ const submitClockEntry = async () => {
             <!-- Current time display -->
             <div class="mb-4 p-3 bg-blue-50 rounded-lg">
                 <p class="text-xs text-gray-600 mb-0.5">Current Server Time (GMT +8:00)</p>
-                <p class="text-base font-bold text-gray-900">
+                <p class="text-base font-bold font-sans text-gray-900">
                     {{ new Date().toLocaleString('en-US', { 
                         year: 'numeric', 
                         month: 'short', 
